@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, Calendar, User } from 'lucide-react';
+import logo from "../assets/logo.png";
 
 function FormUser({ onSubmit }) {
   const [formData, setFormData] = useState({
@@ -36,7 +37,7 @@ function FormUser({ onSubmit }) {
       return 'Kegiatan wajib dipilih';
     }
     if (!formData.confirmAttendance) {
-      return 'Mohon konfirmasi kehadiran Anda';
+      return 'Mohon ceklis konfirmasi kehadiran Anda';
     }
     return null;
   };
@@ -69,7 +70,7 @@ function FormUser({ onSubmit }) {
       } else {
         setMessage({ type: 'error', text: result.message || 'Terjadi kesalahan saat menyimpan data' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Terjadi kesalahan sistem. Silakan coba lagi.' });
     }
     
@@ -82,15 +83,13 @@ function FormUser({ onSubmit }) {
         {/* Main Form Container */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           {/* Header Section */}
-          <div className="bg-blue-600 text-white px-6 py-8 md:px-8 md:py-12">
+          <div className="bg-gray-100 text-white px-6 py-8 md:px-8 md:py-12">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-white/20 rounded-full mb-6">
-                <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-white" />
-              </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white">
+              <img src={logo} alt="Logo" className="mx-auto mb-4 w-24 h-24 object-contain" />
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-black">
                 Form Kehadiran
               </h1>
-              <p className="text-blue-100 text-lg md:text-xl font-medium">Seminar & Try Out</p>
+              <p className="text-blue-100 text-lg md:text-xl font-bold text-gray-700">Seminar & Try Out</p>
             </div>
           </div>
 
@@ -163,8 +162,8 @@ function FormUser({ onSubmit }) {
                       <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
                       <span className="font-semibold text-gray-900 text-sm md:text-base">Konfirmasi Kehadiran</span>
                     </div>
-                    <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                      Saya mengkonfirmasi kehadiran dan berkomitmen untuk mengikuti kegiatan hingga selesai
+                    <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify">
+                      Saya mengkonfirmasi menghadiri dan mengikuti kegiatan hingga selesai
                     </p>
                   </label>
                 </div>
@@ -219,7 +218,7 @@ function FormUser({ onSubmit }) {
 
         {/* Footer */}
         <div className="text-center mt-6 text-gray-500 text-sm">
-          <p>© 2025 Form Kehadiran</p>
+          <p>©2025 PT. Graha Karya Informasi. All rights reserved.</p>
         </div>
       </div>
     </div>
