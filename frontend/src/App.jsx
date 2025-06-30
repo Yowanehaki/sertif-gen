@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import FormUser from './pages/user/FormUser';
+import FormUser from './pages/FormUser';
 
 function App() {
   return (
