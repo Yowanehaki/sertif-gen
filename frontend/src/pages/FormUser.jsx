@@ -78,28 +78,30 @@ function FormUser({ onSubmit }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
-      <div className="relative max-w-2xl mx-auto">
-        {/* Main Form Container */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          {/* Header Section */}
-          <div className="bg-gray-100 text-white px-6 py-4 md:px-8 md:py-12">
-            <div className="text-center">
-              <img src={logo} alt="Logo" className="mx-auto mb-1 w-50 h-23 object-contain" />
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 text-black">
+    <div className="min-h-screen bg-gray-900 p-5 py-6 md:p-6 lg:p-10 ">
+    <div className="relative max-w-2xl mx-auto">
+      {/* Main Form Container */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        {/* Header Section - Mobile Side by Side Layout */}
+        <div className="bg-blue-100 text-white px-4 py-7 md:px-8 md:py-4">
+          <div className="flex items-center gap-4 md:gap-6">
+            <img src={logo} alt="Logo" className="w-16 h-12 md:w-40 md:h-28 object-contain flex-shrink-0" />
+            <div className="flex-1">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-black">
                 Form Kehadiran
               </h1>
-              <p className="text-lg md:text-xl font-bold text-gray-700">Workshop & Activity</p>
+              <p className="text-sm md:text-lg font-bold text-gray-700">Workshop & Activity</p>
             </div>
           </div>
+        </div>
 
           {/* Form Content */}
           <div className="p-6 md:p-8 lg:p-10">
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Nama Lengkap */}
               <div className="group">
-                <label htmlFor="fullName" className="flex items-center text-sm md:text-base font-semibold text-gray-700 mb-3">
-                  <User className="w-5 h-5 mr-2 text-gray-600" />
+                <label htmlFor="fullName" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">
+                  <User className="w-5 h-5 mr-2 text-gray-700" />
                   Nama Lengkap <span className="text-red-500 ml-1">*</span>
                 </label>
                 <div>
@@ -110,15 +112,15 @@ function FormUser({ onSubmit }) {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="Masukkan nama lengkap Anda"
-                    className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                    className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200"
                   />
                 </div>
               </div>
 
               {/* Activity */}
               <div className="group">
-                <label htmlFor="activity" className="flex items-center text-sm md:text-base font-semibold text-gray-700 mb-3">
-                  <Calendar className="w-5 h-5 mr-2 text-gray-600" />
+                <label htmlFor="activity" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">
+                  <Calendar className="w-5 h-5 mr-2 text-gray-700" />
                   Kegiatan <span className="text-red-500 ml-1">*</span>
                 </label>
                 <div className="relative">
@@ -127,9 +129,9 @@ function FormUser({ onSubmit }) {
                     name="activity"
                     value={formData.activity}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 appearance-none cursor-pointer"
+                    className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200 appearance-none cursor-pointer"
                   >
-                    <option value="">Pilih kegiatan yang akan diikuti</option>
+                    <option value="" disabled hidden className="text-gray-400">Pilih kegiatan yang akan diikuti</option>
                     {activities.map((activity) => (
                       <option key={activity} value={activity}>
                         {activity}
@@ -146,7 +148,7 @@ function FormUser({ onSubmit }) {
 
               {/* Confirmation Checkbox */}
               <div>
-                <div className="flex items-start space-x-4 p-6 md:p-6 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-start space-x-3 p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-300">
                   <div className="flex-shrink-0 mt-1">
                     <input
                       type="checkbox"
@@ -154,11 +156,11 @@ function FormUser({ onSubmit }) {
                       name="confirmAttendance"
                       checked={formData.confirmAttendance}
                       onChange={handleInputChange}
-                      className="w-5 h-5 text-blue-600 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 cursor-pointer transition-all duration-200"
                     />
                   </div>
                   <label htmlFor="confirmAttendance" className="cursor-pointer">
-                    <div className="flex items-center mb-2">
+                    <div className="flex items-center mb-1">
                       <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
                       <span className="font-semibold text-gray-900 text-sm md:text-base">Konfirmasi Kehadiran</span>
                     </div>
@@ -170,21 +172,19 @@ function FormUser({ onSubmit }) {
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-3">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-br from-green-600 to-blue-800  text-white py-4 md:py-5 px-8 rounded-lg font-semibold text-sm md:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="w-full bg-gradient-to-br from-green-700 to-blue-700 hover:from-green-500 hover:to-blue-900 text-white py-2 md:py-3 px-8 rounded-lg font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-[1.01]"
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
-                      <span className="text-base md:text-lg">Memproses...</span>
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                      <span>Memproses...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center">
-                      <span className="md:text-lg text-lg font-bold">Submit</span>
-                    </div>
+                    "Submit"
                   )}
                 </button>
               </div>
