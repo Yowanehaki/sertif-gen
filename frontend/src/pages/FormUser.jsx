@@ -183,8 +183,7 @@ function FormUser({ onSubmit }) {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 mr-3" />
-                      <span className="text-base md:text-lg">Submit</span>
+                      <span className="md:text-lg text-lg font-bold">Submit</span>
                     </div>
                   )}
                 </button>
