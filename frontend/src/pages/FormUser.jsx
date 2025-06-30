@@ -83,13 +83,13 @@ function FormUser({ onSubmit }) {
         {/* Main Form Container */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           {/* Header Section */}
-          <div className="bg-gray-100 text-white px-6 py-8 md:px-8 md:py-12">
+          <div className="bg-gray-100 text-white px-6 py-4 md:px-8 md:py-12">
             <div className="text-center">
-              <img src={logo} alt="Logo" className="mx-auto mb-4 w-24 h-24 object-contain" />
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-black">
+              <img src={logo} alt="Logo" className="mx-auto mb-1 w-50 h-23 object-contain" />
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 text-black">
                 Form Kehadiran
               </h1>
-              <p className="text-blue-100 text-lg md:text-xl font-bold text-gray-700">Seminar & Try Out</p>
+              <p className="text-lg md:text-xl font-bold text-gray-700">Workshop & Activity</p>
             </div>
           </div>
 
@@ -174,7 +174,7 @@ function FormUser({ onSubmit }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-blue-600 text-white py-4 md:py-5 px-8 rounded-lg font-semibold text-sm md:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="w-full bg-gradient-to-br from-green-600 to-blue-800  text-white py-4 md:py-5 px-8 rounded-lg font-semibold text-sm md:text-base hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
@@ -184,7 +184,7 @@ function FormUser({ onSubmit }) {
                   ) : (
                     <div className="flex items-center justify-center">
                       <CheckCircle className="w-6 h-6 mr-3" />
-                      <span className="text-base md:text-lg">Konfirmasi Kehadiran</span>
+                      <span className="text-base md:text-lg">Submit</span>
                     </div>
                   )}
                 </button>
