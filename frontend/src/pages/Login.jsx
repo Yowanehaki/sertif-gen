@@ -43,7 +43,7 @@ function LoginPage({ onLogin }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock authentication - replace with real API call
-      if (formData.username === 'admin' && formData.password === 'password') {
+      if (formData.username === 'admin' && formData.password === 'admin') {
         if (onLogin) {
           onLogin({ username: formData.username });
         }
