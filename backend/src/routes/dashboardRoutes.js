@@ -7,6 +7,8 @@ const { PuppeteerCertificateGenerator } = require('../utils/puppeteer');
 const fs = require('fs');
 const path = require('path');
 
+//protect
+
 router.get('/', ctrl.getAll);
 router.get('/:id_sertif', ctrl.getById);
 router.post('/', ctrl.create);
