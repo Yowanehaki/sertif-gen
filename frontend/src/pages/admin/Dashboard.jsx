@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown } from 'lucide-react';
 import NavigationMenu from './Components/Navbar.jsx';
 import Sidebar from './Components/Sidebar.jsx';
@@ -9,42 +9,13 @@ import Filter from './Components/Filter.jsx';
 import HapusPeserta from './Components/HapusPeserta.jsx';
 import EditPeserta from './Components/EditPeserta.jsx';
 
-const dummyPeserta = [
-  { id: 1, nama: 'Budi Santoso', aktivitas: 'Seminar AI', tgl: '2024-06-01', status: 'Hadir' },
-  { id: 2, nama: 'Siti Nurhaliza', aktivitas: 'Workshop Design', tgl: '2024-06-02', status: 'Hadir' },
-  { id: 3, nama: 'Andi Prasetyo', aktivitas: 'Try Out UTBK', tgl: '2024-06-03', status: 'Tidak Hadir' },
-  { id: 4, nama: 'Maya Sari', aktivitas: 'Seminar AI', tgl: '2024-06-01', status: 'Hadir' },
-  { id: 5, nama: 'Rizki Ahmad', aktivitas: 'Workshop Design', tgl: '2024-06-02', status: 'Hadir' },
-  { id: 6, nama: 'Dewi Lestari', aktivitas: 'Seminar AI', tgl: '2024-06-04', status: 'Hadir' },
-  { id: 7, nama: 'Fajar Nugroho', aktivitas: 'Try Out UTBK', tgl: '2024-06-05', status: 'Tidak Hadir' },
-  { id: 8, nama: 'Galih Saputra', aktivitas: 'Workshop Design', tgl: '2024-06-06', status: 'Hadir' },
-  { id: 9, nama: 'Hana Putri', aktivitas: 'Seminar AI', tgl: '2024-06-07', status: 'Hadir' },
-  { id: 10, nama: 'Indra Wijaya', aktivitas: 'Try Out UTBK', tgl: '2024-06-08', status: 'Tidak Hadir' },
-  { id: 11, nama: 'Joko Susilo', aktivitas: 'Workshop Design', tgl: '2024-06-09', status: 'Hadir' },
-  { id: 12, nama: 'Kiki Amelia', aktivitas: 'Seminar AI', tgl: '2024-06-10', status: 'Hadir' },
-  { id: 13, nama: 'Lina Marlina', aktivitas: 'Try Out UTBK', tgl: '2024-06-11', status: 'Tidak Hadir' },
-  { id: 14, nama: 'Maman Suherman', aktivitas: 'Workshop Design', tgl: '2024-06-12', status: 'Hadir' },
-  { id: 15, nama: 'Nina Agustina', aktivitas: 'Seminar AI', tgl: '2024-06-13', status: 'Hadir' },
-  { id: 16, nama: 'Oki Setiawan', aktivitas: 'Try Out UTBK', tgl: '2024-06-14', status: 'Tidak Hadir' },
-  { id: 17, nama: 'Putri Ayu', aktivitas: 'Workshop Design', tgl: '2024-06-15', status: 'Hadir' },
-  { id: 18, nama: 'Qori Rahman', aktivitas: 'Seminar AI', tgl: '2024-06-16', status: 'Hadir' },
-  { id: 19, nama: 'Rina Sari', aktivitas: 'Try Out UTBK', tgl: '2024-06-17', status: 'Tidak Hadir' },
-  { id: 20, nama: 'Sandy Pratama', aktivitas: 'Workshop Design', tgl: '2024-06-18', status: 'Hadir' },
-];
-
-const dummyAktivitas = [
-  'Seminar AI',
-  'Workshop Design',
-  'Try Out UTBK',
-];
-
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
-  const [peserta, setPeserta] = useState(dummyPeserta);
+  const [peserta, setPeserta] = useState([]);
   const [selected, setSelected] = useState([]);
   const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '' });
   const [showDelete, setShowDelete] = useState(false);
-  const [aktivitas, setAktivitas] = useState(dummyAktivitas);
+  const [aktivitas, setAktivitas] = useState([]);
   const [editAktivitas, setEditAktivitas] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
@@ -56,6 +27,19 @@ function Dashboard() {
   });
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Ambil data peserta dari backend saat mount
+  useEffect(() => {
+    fetch('http://localhost:5000/dashboard')
+      .then(res => res.json())
+      .then(data => {
+        setPeserta(data);
+        // Optional: set aktivitas unik dari data peserta
+        const aktivitasList = Array.from(new Set(data.map(p => p.aktivitas)));
+        setAktivitas(aktivitasList);
+      });
+  }, []);
 
   // Filter peserta
   const filteredPeserta = peserta.filter(p =>
@@ -203,30 +187,42 @@ function Dashboard() {
                 <button
                   onClick={() => setShowGenerate(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  disabled={isGenerating}
                 >
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-              <form onSubmit={e => {e.preventDefault();console.log(generateData);setShowGenerate(false);}} className="space-y-4">
+              <form onSubmit={async e => {
+                e.preventDefault();
+                setIsGenerating(true);
+                // ... logic generate ...
+                setIsGenerating(false);
+                setShowGenerate(false);
+              }} className="space-y-4">
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Nama Penguji</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.namaPenguji} onChange={e => setGenerateData({...generateData, namaPenguji: e.target.value})} required />
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.namaPenguji} onChange={e => setGenerateData({...generateData, namaPenguji: e.target.value})} required disabled={isGenerating} />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Jabatan Penguji</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.jabatanPenguji} onChange={e => setGenerateData({...generateData, jabatanPenguji: e.target.value})} required />
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.jabatanPenguji} onChange={e => setGenerateData({...generateData, jabatanPenguji: e.target.value})} required disabled={isGenerating} />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanggal Terbit</label>
-                  <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required />
+                  <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required disabled={isGenerating} />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
-                  <input type="file" accept="image/*" className="w-full" onChange={e => setGenerateData({...generateData, tandaTangan: e.target.files[0]})} required />
+                  <input type="file" accept="image/*" className="w-full" onChange={e => setGenerateData({...generateData, tandaTangan: e.target.files[0]})} disabled={isGenerating} />
+                  {generateData.tandaTangan && (
+                    <div className="mt-2 text-xs text-gray-600">File: {generateData.tandaTangan.name}</div>
+                  )}
                 </div>
                 <div className="flex space-x-3 pt-2">
-                  <button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Generate</button>
-                  <button type="button" onClick={() => setShowGenerate(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
+                  <button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105" disabled={isGenerating}>
+                    {isGenerating ? 'Memproses...' : 'Generate'}
+                  </button>
+                  <button type="button" onClick={() => setShowGenerate(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200" disabled={isGenerating}>Batal</button>
                 </div>
               </form>
             </div>

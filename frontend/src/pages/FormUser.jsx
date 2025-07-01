@@ -4,7 +4,7 @@ import logo from "../assets/logo.png";
 import FormUserForm from '../components/Form/FormUser.jsx';
 import { useNavigate } from 'react-router-dom';
 
-function FormUser({ onSubmit }) {
+function FormUser() {
   const [formData, setFormData] = useState({
     fullName: '',
     activity: '',
@@ -60,11 +60,18 @@ function FormUser({ onSubmit }) {
     }
 
     try {
-      // Kirim data ke parent component
-      const result = await (onSubmit ? onSubmit(formData) : { success: true });
-      
-      if (result.success) {
-        // Navigasi ke halaman apresiasi
+      // Kirim data ke backend
+      const res = await fetch('http://localhost:5000/dashboard/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama: formData.fullName,
+          aktivitas: formData.activity,
+          companyCode: 'DEFAULT', // Ganti jika ada input company code
+        })
+      });
+      const result = await res.json();
+      if (res.ok) {
         navigate('/apresiasi');
         return;
       } else {
@@ -73,7 +80,6 @@ function FormUser({ onSubmit }) {
     } catch {
       setMessage({ type: 'error', text: 'Terjadi kesalahan sistem. Silakan coba lagi.' });
     }
-    
     setIsSubmitting(false);
   };
 

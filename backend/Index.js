@@ -5,6 +5,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const aktivitasRoutes = require('./src/routes/aktivitasRoutes');
 const downloadRoutes = require('./src/routes/downloadRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
+const serviceRoutes = require('./src/routes/serviceRoutes');
 const path = require('path');
 const { createDefaultAdmin } = require('./src/models/userAdmin.js');
 
@@ -17,6 +18,7 @@ app.use('/admin', adminRoutes);
 app.use('/aktivitas', aktivitasRoutes);
 app.use('/download', downloadRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/service', serviceRoutes);
 
 // Static serve for generated certificates and signatures
 app.use('/generated-certificates', express.static(path.join(__dirname, 'generated-certificates')));

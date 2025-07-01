@@ -7,10 +7,16 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
   const [currentEditIdx, setCurrentEditIdx] = useState(null);
   const [currentDeleteIdx, setCurrentDeleteIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [editKodePerusahaan, setEditKodePerusahaan] = useState('');
+  const [editBatch, setEditBatch] = useState('');
+  const [newKodePerusahaan, setNewKodePerusahaan] = useState('');
+  const [newBatch, setNewBatch] = useState('');
 
   const openEdit = (idx) => {
     setCurrentEditIdx(idx);
-    setEditValue(aktivitas[idx]);
+    setEditValue(aktivitas[idx].nama);
+    setEditKodePerusahaan(aktivitas[idx].kode_perusahaan || '');
+    setEditBatch(aktivitas[idx].batch || '');
     setShowEdit(true);
   };
   const openDelete = (idx) => {
@@ -19,9 +25,9 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
   };
   const handleEditSave = (e) => {
     e.preventDefault();
-    if (editValue && !aktivitas.includes(editValue)) {
+    if (editValue) {
       const newAktivitas = [...aktivitas];
-      newAktivitas[currentEditIdx] = editValue;
+      newAktivitas[currentEditIdx] = { nama: editValue, kode_perusahaan: editKodePerusahaan, batch: editBatch };
       setAktivitas(newAktivitas);
     }
     setShowEdit(false);
@@ -39,13 +45,19 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
             <Settings className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Aktivitas</h2>
-          <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas</p>
+          <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas dan kode perusahaan</p>
         </div>
         <div className="space-y-6">
           <div className="space-y-3">
             {aktivitas.map((a, idx) => (
-              <div key={a} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
-                <span className="font-medium text-gray-800">{a}</span>
+              <div key={a.nama + (a.batch || '')} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                <div>
+                  <div className="font-medium text-gray-800">{a.nama}</div>
+                  <div className="text-xs text-gray-500 flex gap-2 items-center">
+                    <span>Kode Perusahaan: <span className="font-mono">{a.kode_perusahaan || '-'}</span></span>
+                    <span>| Batch: <span className="font-mono">{a.batch || '-'}</span></span>
+                  </div>
+                </div>
                 <div className="flex space-x-2">
                   <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
                     <Edit className="w-4 h-4" />
@@ -61,10 +73,12 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
             className="flex gap-3"
             onSubmit={e => {
               e.preventDefault();
-              if(editAktivitas && !aktivitas.includes(editAktivitas)) {
-                setAktivitas([...aktivitas, editAktivitas]);
+              if(editAktivitas) {
+                setAktivitas([...aktivitas, { nama: editAktivitas, kode_perusahaan: newKodePerusahaan, batch: newBatch }]);
               }
               setEditAktivitas('');
+              setNewKodePerusahaan('');
+              setNewBatch('');
             }}
           >
             <div className="relative flex-1">
@@ -77,6 +91,20 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
                 onChange={e => setEditAktivitas(e.target.value)}
               />
             </div>
+            <input
+              type="text"
+              className="w-48 px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              placeholder="Kode perusahaan..."
+              value={newKodePerusahaan}
+              onChange={e => setNewKodePerusahaan(e.target.value)}
+            />
+            <input
+              type="text"
+              className="w-32 px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              placeholder="Batch..."
+              value={newBatch}
+              onChange={e => setNewBatch(e.target.value)}
+            />
             <button
               type="submit"
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -101,6 +129,14 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Nama Aktivitas</label>
                   <input type="text" className="w-full border rounded-lg px-3 py-2" value={editValue} onChange={e => setEditValue(e.target.value)} required />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Kode Perusahaan</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={editKodePerusahaan} onChange={e => setEditKodePerusahaan(e.target.value)} required />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Batch</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={editBatch} onChange={e => setEditBatch(e.target.value)} required />
                 </div>
                 <div className="flex space-x-3 pt-2">
                   <button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Simpan</button>
@@ -127,7 +163,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
                   <Trash2 className="w-8 h-8 text-red-600" />
                 </div>
                 <p className="text-gray-600">
-                  Yakin ingin menghapus aktivitas <span className="font-semibold text-gray-800">{aktivitas[currentDeleteIdx]}</span>?
+                  Yakin ingin menghapus aktivitas <span className="font-semibold text-gray-800">{aktivitas[currentDeleteIdx]?.nama}</span>?
                 </p>
                 <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
               </div>
