@@ -51,7 +51,7 @@ const LoginForm = () => {
       {/* Buttons Submit */}
       <div className="flex gap-6">
         <button
-          className="w-full text-center py-2 rounded-md font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white transition-all duration-200 shadow-md"
+          className="w-full text-center py-2 rounded-md font-semibold bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-700 hover:to-blue-600 text-white transition-all duration-200 shadow-md"
           type="submit"
         >
           Login

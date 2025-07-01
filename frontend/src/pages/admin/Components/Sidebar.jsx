@@ -2,7 +2,7 @@ import React from 'react';
 
 function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems }) {
   return (
-    <aside className="w-72 min-h-screen bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 hidden md:block">
+    <aside className="w-72 min-h-screen h-full bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 hidden md:block fixed left-0 top-0 md:top-20 z-30">
       <div className="space-y-3">
         {sidebarItems.map((item) => {
           const Icon = item.icon;

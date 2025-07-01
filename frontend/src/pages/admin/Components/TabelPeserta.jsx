@@ -11,9 +11,9 @@ const TabelPeserta = ({
 }) => {
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
         <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+          <thead className="bg-gradient-to-r from-gray-600 to-gray-600 sticky top-0 z-10">
             <tr>
               <th className="p-4 text-left">
                 <input
@@ -23,18 +23,17 @@ const TabelPeserta = ({
                   onChange={handleSelectAll}
                 />
               </th>
-              <th className="p-4 text-left font-semibold text-gray-700">ID</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Nama</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Email</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Aktivitas</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Tanggal</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Status</th>
-              <th className="p-4 text-left font-semibold text-gray-700">Aksi</th>
+              <th className="p-4 text-left font-semibold text-white">ID</th>
+              <th className="p-4 text-left font-semibold text-white">Nama</th>
+              <th className="p-4 text-left font-semibold text-white">Aktivitas</th>
+              <th className="p-4 text-left font-semibold text-white">Tanggal</th>
+              <th className="p-4 text-left font-semibold text-white">Status</th>
+              <th className="p-4 text-left font-semibold text-white">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {filteredPeserta.map((row, index) => (
-              <tr key={row.id} className={`border-b border-gray-100 hover:bg-blue-50/50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white/50' : 'bg-gray-50/30'}`}>
+              <tr key={row.id} className={`border-b border-gray-300 hover:bg-blue-50/50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
                 <td className="p-4">
                   <input
                     type="checkbox"
@@ -47,7 +46,6 @@ const TabelPeserta = ({
                 <td className="p-4">
                   <div className="font-medium text-gray-900">{row.nama}</div>
                 </td>
-                <td className="p-4 text-gray-600">{row.email}</td>
                 <td className="p-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {row.aktivitas}
