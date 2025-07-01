@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Users, Home, Upload, Settings } from 'lucide-react';
+import { FileText, Users, Home, Upload, Settings, X, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChange }) {
   const [scrolled, setScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const navigate = useNavigate();
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -43,7 +46,7 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
               <Users className="w-4 h-4" />
               <span>{totalPeserta} Peserta</span>
             </div>
-            <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+            <button onClick={() => setShowLogout(true)} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
               Logout
             </button>
           </div>
@@ -73,7 +76,6 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
                 <span>{totalPeserta} Peserta</span>
               </div>
             </div>
-            
             {/* Navigation tabs for mobile */}
             <div className="space-y-2 mb-4">
               {sidebarItems.map((item) => {
@@ -97,12 +99,38 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
                 );
               })}
             </div>
-            
-            <button className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200">
+            <button onClick={() => setShowLogout(true)} className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200">
               Logout
             </button>
           </div>
         </>
+      )}
+      {/* Modal Logout */}
+      {showLogout && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Konfirmasi Logout</h3>
+                <button onClick={() => setShowLogout(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <LogOut className="w-8 h-8 text-red-600" />
+                </div>
+                <p className="text-gray-600">
+                  Yakin ingin logout dari aplikasi?
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <button onClick={() => { setShowLogout(false); navigate('/login'); }} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Logout</button>
+                <button onClick={() => setShowLogout(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </nav>
   );

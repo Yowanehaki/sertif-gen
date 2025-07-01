@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, Calendar, User } from 'lucide-react';
 import logo from "../assets/logo.png";
 import FormUserForm from '../components/Form/FormUser.jsx';
+import { useNavigate } from 'react-router-dom';
 
 function FormUser({ onSubmit }) {
   const [formData, setFormData] = useState({
@@ -21,6 +22,8 @@ function FormUser({ onSubmit }) {
     'Webinar Teknologi AI',
     'Workshop Design Thinking'
   ];
+
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -61,13 +64,9 @@ function FormUser({ onSubmit }) {
       const result = await (onSubmit ? onSubmit(formData) : { success: true });
       
       if (result.success) {
-        setMessage({ type: 'success', text: 'Kehadiran berhasil dikonfirmasi! Terima kasih atas partisipasi Anda.' });
-        // Reset form
-        setFormData({
-          fullName: '',
-          activity: '',
-          confirmAttendance: false
-        });
+        // Navigasi ke halaman apresiasi
+        navigate('/apresiasi');
+        return;
       } else {
         setMessage({ type: 'error', text: result.message || 'Terjadi kesalahan saat menyimpan data' });
       }

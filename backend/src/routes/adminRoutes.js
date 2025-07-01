@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ctrl = require('../controllers/adminController');
+const ctrl = require('../controllers/admin/adminController');
 
 router.post('/login', ctrl.login);
 router.get('/validate', ctrl.validate);

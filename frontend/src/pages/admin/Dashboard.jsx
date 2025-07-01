@@ -7,6 +7,7 @@ import UploadExcel from './Components/UploadExcel.jsx';
 import TabelPeserta from './Components/TabelPeserta.jsx';
 import Filter from './Components/Filter.jsx';
 import HapusPeserta from './Components/HapusPeserta.jsx';
+import EditPeserta from './Components/EditPeserta.jsx';
 
 const dummyPeserta = [
   { id: 1, nama: 'Budi Santoso', aktivitas: 'Seminar AI', tgl: '2024-06-01', status: 'Hadir' },
@@ -46,6 +47,15 @@ function Dashboard() {
   const [aktivitas, setAktivitas] = useState(dummyAktivitas);
   const [editAktivitas, setEditAktivitas] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [generateData, setGenerateData] = useState({
+    namaPenguji: '',
+    jabatanPenguji: '',
+    tanggalTerbit: '',
+    tandaTangan: null
+  });
+  const [showEdit, setShowEdit] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   // Filter peserta
   const filteredPeserta = peserta.filter(p =>
@@ -63,8 +73,9 @@ function Dashboard() {
     setSelected(selected.length === filteredPeserta.length ? [] : filteredPeserta.map(p => p.id));
   };
   
-  const handleEdit = () => {
-    setShowDelete(true);
+  const handleEdit = (row) => {
+    setEditData(row);
+    setShowEdit(true);
   };
   
   const handleDelete = () => {
@@ -137,11 +148,11 @@ function Dashboard() {
                     <p className="text-gray-600">Kelola data peserta dan generate sertifikat dengan mudah</p>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <button onClick={() => setShowGenerate(true)} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
                       <FileText className="w-4 h-4" />
                       <span>Generate Sertifikat</span>
                     </button>
-                    <button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <button onClick={() => setShowDelete(true)} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
                       <Trash2 className="w-4 h-4" />
                       <span>Hapus Terpilih ({selected.length})</span>
                     </button>
@@ -182,6 +193,47 @@ function Dashboard() {
         </main>
       </div>
 
+      {/* Modal Generate Sertifikat */}
+      {showGenerate && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Generate Sertifikat</h3>
+                <button
+                  onClick={() => setShowGenerate(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <form onSubmit={e => {e.preventDefault();console.log(generateData);setShowGenerate(false);}} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Nama Penguji</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.namaPenguji} onChange={e => setGenerateData({...generateData, namaPenguji: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Jabatan Penguji</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.jabatanPenguji} onChange={e => setGenerateData({...generateData, jabatanPenguji: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Tanggal Terbit</label>
+                  <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
+                  <input type="file" accept="image/*" className="w-full" onChange={e => setGenerateData({...generateData, tandaTangan: e.target.files[0]})} required />
+                </div>
+                <div className="flex space-x-3 pt-2">
+                  <button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Generate</button>
+                  <button type="button" onClick={() => setShowGenerate(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal Hapus Peserta */}
       <HapusPeserta
         show={showDelete}
@@ -192,6 +244,20 @@ function Dashboard() {
         }}
         selected={selected}
         peserta={peserta}
+      />
+
+      {/* Modal Edit Peserta */}
+      <EditPeserta
+        show={showEdit}
+        onClose={() => setShowEdit(false)}
+        editData={editData}
+        setEditData={setEditData}
+        onSave={e => {
+          e.preventDefault();
+          setPeserta(peserta.map(p => p.id === editData.id ? {...p, nama: editData.nama, aktivitas: editData.aktivitas} : p));
+          setShowEdit(false);
+        }}
+        aktivitas={aktivitas}
       />
     </div>
   );

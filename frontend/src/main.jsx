@@ -7,6 +7,7 @@ import FormUser from "./pages/FormUser.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import Appreciate from "./pages/Apresiasi.jsx";
+import ProtectedRoute from "./components/ProtectRoute/ProtectRoute.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -14,7 +15,11 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<FormUser />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/apresiasi" element={<Appreciate />} />
       </Routes>
     </BrowserRouter>

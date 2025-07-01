@@ -3,7 +3,21 @@ import { X, Trash2 } from 'lucide-react';
 
 const HapusPeserta = ({ show, onClose, onDelete, selected, peserta }) => {
   if (!show) return null;
-  const namaPeserta = peserta.find(p => p.id === selected[0])?.nama;
+  let content;
+  if (selected.length > 1) {
+    content = (
+      <p className="text-gray-600">
+        Yakin ingin menghapus <span className="font-semibold text-gray-800">{selected.length} peserta terpilih</span>?
+      </p>
+    );
+  } else {
+    const namaPeserta = peserta.find(p => p.id === selected[0])?.nama;
+    content = (
+      <p className="text-gray-600">
+        Yakin ingin menghapus peserta <span className="font-semibold text-gray-800">{namaPeserta}</span>?
+      </p>
+    );
+  }
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
@@ -21,9 +35,7 @@ const HapusPeserta = ({ show, onClose, onDelete, selected, peserta }) => {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-600" />
             </div>
-            <p className="text-gray-600">
-              Yakin ingin menghapus peserta <span className="font-semibold text-gray-800">{namaPeserta}</span>?
-            </p>
+            {content}
             <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
           </div>
           <div className="flex space-x-3">

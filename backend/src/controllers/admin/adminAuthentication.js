@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { getAdminAccount } = require("./adminAccount.cjs");
+const { getAdminAccount } = require("./adminAccount.js");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
@@ -15,12 +15,13 @@ const adminAuth = async (req, res) => {
   }
 
   try {
-    const data = await getAdminAccount();
-    const admin = JSON.parse(data);
-
+    const admin = await getAdminAccount();
+    if (!admin) {
+      return res.status(404).json({ message: "Admin tidak ditemukan" });
+    }
     const isPasswordValid = await bcrypt.compare(body.password, admin.password);
     const payload = {
-      id: admin.id_user,
+      id: admin.id,
       username: admin.username,
     };
 

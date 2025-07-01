@@ -13,18 +13,19 @@ export const AdminAuthentication = async (event) => {
   };
 
   try {
-    const res = await axios.post(`${serverUrl}admin/login`, data, {
+    const baseUrl = serverUrl ? serverUrl.replace(/\/?$/, '/') : '/';
+    const res = await axios.post(`${baseUrl}admin/login`, data, {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     if (res.status === 200) {
-      alert(`${res.data.message}`);
+      alert(`${res.data.message || 'Login Berhasil'}`);
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/admin-dashboard";
+      window.location.href = "/dashboard";
     }
   } catch (error) {
-    alert(`Login gagal : ${error.response.data.message}`);
+    alert(`Login gagal : ${error?.response?.data?.message || error.message}`);
   }
 };

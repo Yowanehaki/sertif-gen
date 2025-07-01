@@ -6,6 +6,7 @@ const aktivitasRoutes = require('./src/routes/aktivitasRoutes');
 const downloadRoutes = require('./src/routes/downloadRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 const path = require('path');
+const { createDefaultAdmin } = require('./src/models/userAdmin.js');
 
 const app = express();
 app.use(cors());
@@ -23,5 +24,8 @@ app.use('/uploads/signatures', express.static(path.join(__dirname, 'uploads/sign
 
 app.get('/', (req, res) => res.send('Sertif-Gen API Ready!'));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+(async () => {
+  await createDefaultAdmin();
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+})();

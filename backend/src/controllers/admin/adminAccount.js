@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { getAdmin, createAdmin } = require("../../models/userAdminQuery.cjs");
+const { getAdmin, createAdmin } = require("../../models/userAdmin.js");
 require("dotenv").config();
 
 const saltRounds = 10; 
@@ -15,10 +15,10 @@ const hashPassword = async (password, username) => {
   }
 };
 
-const getAdminAccount = async (req, res) => {
+const getAdminAccount = async () => {
   try {
-    const [data] = await getAdmin();
-    return JSON.stringify(data);
+    const admins = await getAdmin();
+    return admins[0]; // return objek admin pertama
   } catch (error) {
     throw error;
   }

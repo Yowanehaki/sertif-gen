@@ -1,28 +1,41 @@
-const dbPool = require("../config/database.cjs");
+const prisma = require("../config/prisma.js");
+const bcrypt = require("bcrypt");
 
-const createAdmin = (username, password) => {
-  const query = `INSERT INTO user_admin (username, password, refresh_token) VALUES (?, ?, ?)`;
-  const values = [username, password, null];
-
-  try {
-    return dbPool.execute(query, values);
-  } catch (error) {
-    throw error;
-  }
+// Membuat admin baru
+const createAdmin = async (username, password) => {
+  const hashed = await bcrypt.hash(password, 10);
+  return prisma.admin.create({
+    data: {
+      username,
+      password: hashed,
+    },
+  });
 };
 
+// Mengambil semua admin
 const getAdmin = async () => {
-  const query = "SELECT * FROM user_admin";
+  return prisma.admin.findMany();
+};
 
-  try {
-    const [rows] = await dbPool.execute(query);
-    return rows;
-  } catch (error) {
-    throw error;
+// Fungsi untuk membuat admin default jika belum ada
+const createDefaultAdmin = async () => {
+  const admin = await prisma.admin.findFirst({ where: { username: 'admin' } });
+  if (!admin) {
+    const hashed = await bcrypt.hash('admin123', 10);
+    await prisma.admin.create({
+      data: {
+        username: 'admin',
+        password: hashed,
+      },
+    });
+    console.log('Default admin created: admin/admin123');
+  } else {
+    console.log('Default admin already exists');
   }
 };
 
 module.exports = {
   createAdmin,
   getAdmin,
+  createDefaultAdmin,
 };
