@@ -7,24 +7,56 @@ exports.getAll = async (req, res) => {
   if (nama) where.nama = { contains: nama };
   if (aktivitas) where.aktivitas = aktivitas;
   if (tgl_submit) where.tgl_submit = new Date(tgl_submit);
-  const data = await prisma.dashboard.findMany({ where, orderBy: { tgl_submit: 'desc' } });
+  const data = await prisma.peserta.findMany({
+    where,
+    orderBy: { tgl_submit: 'desc' },
+    include: { kodePerusahaan: true }
+  });
   res.json(data);
 };
 
 exports.getById = async (req, res) => {
   const { id_sertif } = req.params;
-  const data = await prisma.dashboard.findUnique({ where: { id_sertif } });
+  const data = await prisma.peserta.findUnique({ where: { id_sertif } });
   if (!data) return res.status(404).json({ error: 'Not found' });
   res.json(data);
 };
 
 exports.create = async (req, res) => {
-  const { nama, aktivitas, tgl_submit, kode_perusahaan, konfirmasi_hadir } = req.body;
+  const { nama, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
   const id_sertif = nanoid(8);
-  const data = await prisma.dashboard.create({
-    data: { id_sertif, nama, aktivitas, tgl_submit: new Date(tgl_submit), kode_perusahaan, konfirmasi_hadir }
+  const tahun = new Date(tgl_submit).getFullYear().toString();
+
+  // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
+  const count = await prisma.kodePerusahaan.count({
+    where: {
+      kode,
+      batch,
+      peserta: {
+        tgl_submit: {
+          gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+          lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+        }
+      }
+    }
   });
-  res.json(data);
+  const no_urut = count + 1;
+
+  // 1. Create Peserta
+  const peserta = await prisma.peserta.create({
+    data: { id_sertif, nama, aktivitas, tgl_submit: new Date(tgl_submit), konfirmasi_hadir }
+  });
+
+  // 2. Create KodePerusahaan
+  const kodePerusahaan = await prisma.kodePerusahaan.create({
+    data: { id_sertif, kode, batch, no_urut }
+  });
+
+  // 3. Generate kode perusahaan utuh
+  const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
+
+  // 4. Gabungkan hasil jika perlu
+  res.json({ ...peserta, kodePerusahaan, kode_perusahaan_utuh });
 };
 
 exports.update = async (req, res) => {
@@ -32,7 +64,7 @@ exports.update = async (req, res) => {
   const { nama, aktivitas, konfirmasi_hadir } = req.body;
   
   try {
-    const data = await prisma.dashboard.update({
+    const data = await prisma.peserta.update({
       where: { id_sertif },
       data: { 
         nama, 
@@ -50,7 +82,7 @@ exports.delete = async (req, res) => {
   const { id_sertif } = req.params;
   
   try {
-    await prisma.dashboard.delete({ where: { id_sertif } });
+    await prisma.peserta.delete({ where: { id_sertif } });
     res.json({ success: true, message: 'Peserta berhasil dihapus' });
   } catch (error) {
     res.status(500).json({ error: 'Gagal menghapus data', message: error.message });
@@ -60,7 +92,7 @@ exports.delete = async (req, res) => {
 exports.generateSertifikat = async (req, res) => {
   const { id_sertif } = req.params;
   const { nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
-  const data = await prisma.dashboard.update({
+  const data = await prisma.peserta.update({
     where: { id_sertif },
     data: {
       nama_penguji,
@@ -82,7 +114,7 @@ exports.bulkDelete = async (req, res) => {
   const { ids } = req.body;
   
   try {
-    await prisma.dashboard.deleteMany({
+    await prisma.peserta.deleteMany({
       where: {
         id_sertif: {
           in: ids

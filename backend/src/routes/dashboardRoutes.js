@@ -67,41 +67,53 @@ const aktivitasMap = {
 
 // Endpoint submit form peserta
 router.post('/submit', async (req, res) => {
-  const { nama, aktivitas } = req.body;
-  if (!nama || !aktivitas) {
+  const { nama, aktivitas, batch } = req.body;
+  if (!nama || !aktivitas || !batch) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
   try {
-    const kodeAktivitas = aktivitasMap[aktivitas] || 'UNK';
+    // Ambil kode aktivitas dari tabel Aktivitas
+    const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas } });
+    const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
     const now = new Date();
-    const tahun = now.getFullYear();
+    const tahun = now.getFullYear().toString();
 
-    // Hitung nomor urut sertif untuk tahun+aktivitas
-    const count = await prisma.dashboard.count({
+    // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
+    const count = await prisma.kodePerusahaan.count({
       where: {
-        aktivitas,
-        tgl_submit: {
-          gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-          lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+        kode,
+        batch,
+        peserta: {
+          tgl_submit: {
+            gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+            lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+          }
         }
       }
     });
-    const noUrut = String(count + 1).padStart(4, '0');
-    // batch diisi manual oleh admin saat generate sertifikat
-    const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${req.body.batch || 'BATCH'}/${noUrut}`;
+    const no_urut = count + 1;
+    const id_sertif = require('nanoid').nanoid(8);
 
-    const id_sertif = nanoid(8);
-    const peserta = await prisma.dashboard.create({
+    // 1. Create Peserta
+    const peserta = await prisma.peserta.create({
       data: {
         id_sertif,
         nama,
         aktivitas,
-        kode_perusahaan: companyCode,
         tgl_submit: now,
-        konfirmasi_hadir: true,
+        konfirmasi_hadir: true
       }
     });
-    res.status(201).json({ message: 'Data berhasil disimpan', peserta });
+
+    // 2. Create KodePerusahaan
+    const kodePerusahaan = await prisma.kodePerusahaan.create({
+      data: { id_sertif, kode, batch, no_urut }
+    });
+
+    // 3. Generate kode perusahaan utuh
+    const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
+
+    res.status(201).json({ message: 'Data berhasil disimpan', peserta, kodePerusahaan, kode_perusahaan_utuh });
   } catch (err) {
     res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
   }

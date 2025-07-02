@@ -7,7 +7,8 @@ function FormUser({
   handleSubmit,
   isSubmitting,
   message,
-  activities
+  activities,
+  batchList = []
 }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -53,6 +54,33 @@ function FormUser({
           </select>
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Batch */}
+      <div className="group">
+         <label htmlFor="activity" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">
+          <Calendar className="w-5 h-5 mr-2 text-gray-700" />
+          Batch <span className="text-red-500 ml-1">*</span>
+        </label>
+        <div className="relative">
+          <select
+            id="batch"
+            name="batch"
+            value={formData.batch}
+            onChange={handleInputChange}
+            className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200 appearance-none cursor-pointer"
+          >
+            <option value="" disabled hidden className="text-gray-400">Pilih batch</option>
+            {batchList.map((b) => (
+              <option key={b.id} value={b.nama} className="font-semibold text-blue-700">{b.nama}</option>
+            ))}
+          </select>
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -129,4 +157,4 @@ function FormUser({
   );
 }
 
-export default FormUser; 
+export default FormUser;

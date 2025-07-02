@@ -48,8 +48,9 @@ const TabelPeserta = ({
               <th className="p-4 text-left font-semibold text-white">ID Sertif</th>
               <th className="p-4 text-left font-semibold text-white">Nama</th>
               <th className="p-4 text-left font-semibold text-white w-60">Aktivitas</th>
+              <th className="p-4 text-left font-semibold text-white">Batch/No</th>
               <th className="p-4 text-left font-semibold text-white">Tanggal Submit</th>
-              <th className="p-4 text-left font-semibold text-white">Status</th>
+              <th className="p-4 text-left font-semibold text-white">Verifikasi</th>
               <th className="p-4 text-left font-semibold text-white">Aksi</th>
             </tr>
           </thead>
@@ -69,12 +70,17 @@ const TabelPeserta = ({
                   <div className="font-medium text-gray-900">{row.nama}</div>
                 </td>
                 <td className="p-4 text-gray-900 break-words max-w-xs">{row.aktivitas}</td>
+                <td className="p-4 text-gray-900 break-words max-w-xs">{
+                  row.kodePerusahaan
+                    ? `(${row.kodePerusahaan.batch}/${String(row.kodePerusahaan.no_urut).padStart(4, '0')})`
+                    : '-'
+                }</td>
                 <td className="p-4 text-gray-600">{row.tgl_submit ? new Date(row.tgl_submit).toLocaleDateString() : '-'}</td>
                 <td className="p-4">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                     row.konfirmasi_hadir ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
-                    {row.konfirmasi_hadir ? 'Hadir' : 'Tidak Hadir'}
+                    {row.konfirmasi_hadir ? 'Terverifikasi' : 'Belum Verifikasi'}
                   </span>
                 </td>
                 <td className="p-4">

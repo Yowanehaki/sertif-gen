@@ -4,17 +4,20 @@ import logo from "../assets/logo.png";
 import FormUserForm from '../components/Form/FormUser.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getAktivitas } from '../services/dashboard/aktivitas.service';
+import { getBatchList } from '../services/dashboard/batch.service';
 
 function FormUser() {
   const [formData, setFormData] = useState({
     fullName: '',
     activity: '',
+    batch: '',
     confirmAttendance: false
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [activities, setActivities] = useState([]);
+  const [batchList, setBatchList] = useState([]);
 
   const navigate = useNavigate();
 
@@ -22,12 +25,21 @@ function FormUser() {
     const fetchAktivitas = async () => {
       try {
         const data = await getAktivitas();
-        setActivities(data); // <-- simpan array objek, bukan hanya nama
+        setActivities(data.filter(a => a.aktif));
       } catch {
         setActivities([]);
       }
     };
+    const fetchBatch = async () => {
+      try {
+        const data = await getBatchList();
+        setBatchList(data.filter(b => b.aktif));
+      } catch {
+        setBatchList([]);
+      }
+    };
     fetchAktivitas();
+    fetchBatch();
   }, []);
 
   const handleInputChange = (e) => {
@@ -45,6 +57,9 @@ function FormUser() {
     if (!formData.activity) {
       return 'Kegiatan wajib dipilih';
     }
+    if (!formData.batch) {
+      return 'Batch wajib dipilih';
+    }
     if (!formData.confirmAttendance) {
       return 'Mohon ceklis konfirmasi kehadiran Anda';
     }
@@ -55,24 +70,21 @@ function FormUser() {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage({ type: '', text: '' });
-
-    // Validasi
     const validationError = validateForm();
     if (validationError) {
       setMessage({ type: 'error', text: validationError });
       setIsSubmitting(false);
       return;
     }
-
     try {
-      // Kirim data ke backend
       const res = await fetch('http://localhost:5000/dashboard/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nama: formData.fullName,
           aktivitas: formData.activity,
-          companyCode: 'DEFAULT', // Ganti jika ada input company code
+          batch: formData.batch,
+          companyCode: 'DEFAULT',
         })
       });
       const result = await res.json();
@@ -115,6 +127,7 @@ function FormUser() {
               isSubmitting={isSubmitting}
               message={message}
               activities={activities}
+              batchList={batchList}
             />
           </div>
         </div>

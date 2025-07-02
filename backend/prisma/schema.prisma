@@ -7,17 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Dashboard {
+model Peserta {
   id_sertif         String   @id
   nama              String
   aktivitas         String
   tgl_submit        DateTime
   nama_penguji      String?
   jabatan_penguji   String?
-  kode_perusahaan   String
   tgl_terbit_sertif DateTime?
   tandatangan       String?
   konfirmasi_hadir  Boolean
+  kodePerusahaan    KodePerusahaan?
 }
 
 model Admin {
@@ -27,7 +27,22 @@ model Admin {
 }
 
 model Aktivitas {
-  id        Int    @id @default(autoincrement())
-  nama     String @unique
-  kode     String
+  id    Int    @id @default(autoincrement())
+  nama  String @unique
+  kode  String
+  aktif Boolean @default(true)
+}
+
+model KodePerusahaan {
+  id_sertif   String   @id
+  kode        String
+  batch       String
+  no_urut     Int
+  peserta     Peserta  @relation(fields: [id_sertif], references: [id_sertif])
+}
+
+model Batch {
+  id    Int    @id @default(autoincrement())
+  nama  String @unique
+  aktif Boolean @default(true)
 }

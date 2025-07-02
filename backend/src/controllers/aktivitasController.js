@@ -15,8 +15,8 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const { id, nama, kode } = req.body;
-  await prisma.aktivitas.update({ where: { id }, data: { nama, kode } });
+  const { id, nama, kode, aktif } = req.body;
+  await prisma.aktivitas.update({ where: { id }, data: { nama, kode, ...(typeof aktif === 'boolean' ? { aktif } : {}) } });
   res.json({ success: true });
 };
 

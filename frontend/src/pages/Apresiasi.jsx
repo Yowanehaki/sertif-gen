@@ -4,7 +4,7 @@ import logo from '../assets/logo.png';
 //Tampilan halaman apresiasi setelah mengirimkan feedback
 const Appreciate = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Card container */}
         <div className="bg-white rounded-2xl shadow-lg border-0 p-8 text-center relative overflow-hidden">

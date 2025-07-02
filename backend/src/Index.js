@@ -6,6 +6,7 @@ const aktivitasRoutes = require('./routes/aktivitasRoutes.js');
 const downloadRoutes = require('./routes/downloadRoutes.js');
 const uploadRoutes = require('./routes/uploadRoutes.js');
 const serviceRoutes = require('./routes/serviceRoutes.js');
+const batchRoutes = require('./routes/batchRoutes');
 const path = require('path');
 const { createDefaultAdmin } = require('./models/userAdmin.js');
 
@@ -19,6 +20,7 @@ app.use('/aktivitas', aktivitasRoutes);
 app.use('/download', downloadRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/service', serviceRoutes);
+app.use('/batch', batchRoutes);
 
 // Static serve for generated certificates and signatures
 app.use('/generated-certificates', express.static(path.join(__dirname, 'generated-certificates')));
