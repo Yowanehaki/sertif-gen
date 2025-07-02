@@ -237,7 +237,7 @@ function Dashboard() {
               </div>
               <div className="flex-[0.9] h-full flex flex-col">
                 <KelolaBatch 
-                
+                batchList={batchList}
                 setNotif={setNotif} 
                 />
               </div>

@@ -5,34 +5,39 @@ import { Switch } from '@headlessui/react';
 
 const KelolaBatch = ({ setNotif }) => {
   const [batchList, setBatchList] = useState([]);
-  const [newBatch, setNewBatch] = useState('');
+  const [newBatch, setNewBatch] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentDeleteIdx, setCurrentDeleteIdx] = useState(null);
 
   useEffect(() => {
-    getBatchList().then(setBatchList);
+    refreshBatchList();
   }, []);
+
+  const refreshBatchList = async () => {
+    const data = await getBatchList();
+    setBatchList(data);
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (newBatch) {
       await createBatch(newBatch);
-      const data = await getBatchList();
-      setBatchList(data);
+      await refreshBatchList();
       setNotif && setNotif('Batch berhasil ditambahkan');
       setTimeout(() => setNotif && setNotif(''), 2000);
       setNewBatch('');
     }
   };
+
   const openDelete = (idx) => {
     setCurrentDeleteIdx(idx);
     setShowDelete(true);
   };
+
   const handleDeleteConfirm = async () => {
     const id = batchList[currentDeleteIdx].id;
     await deleteBatch(id);
-    const data = await getBatchList();
-    setBatchList(data);
+    await refreshBatchList();
     setShowDelete(false);
     setNotif && setNotif('Batch berhasil dihapus');
     setTimeout(() => setNotif && setNotif(''), 2000);
@@ -57,8 +62,7 @@ const KelolaBatch = ({ setNotif }) => {
                   checked={b.aktif}
                   onChange={async (checked) => {
                     await updateBatch(b.id, checked);
-                    const data = await getBatchList();
-                    setBatchList(data);
+                    await refreshBatchList();
                   }}
                   className={`${b.aktif ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
                 >
