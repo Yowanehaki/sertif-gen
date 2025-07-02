@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
 import { createAktivitas, getAktivitas, updateAktivitas, deleteAktivitas } from '../../../services/dashboard/aktivitas.service.js';
-import KelolaBatch from './KelolaBatch';
 import { Switch } from '@headlessui/react';
 
 const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif }) => {
@@ -195,9 +194,6 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
             </div>
           </div>
         )}
-      </div>
-      <div className="flex-1 h-full flex flex-col">
-        <KelolaBatch setNotif={setNotif} />
       </div>
     </div>
   );

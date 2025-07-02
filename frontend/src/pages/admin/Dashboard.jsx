@@ -8,8 +8,10 @@ import TabelPeserta from './Components/TabelPeserta.jsx';
 import Filter from './Components/Filter.jsx';
 import HapusPeserta from './Components/HapusPeserta.jsx';
 import EditPeserta from './Components/EditPeserta.jsx';
+import KelolaBatch from './Components/KelolaBatch.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
 import { getAktivitas } from '../../services/dashboard/aktivitas.service';
+import { getBatchList } from '../../services/dashboard/batch.service';
 
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
@@ -31,11 +33,13 @@ function Dashboard() {
   const [editData, setEditData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [notif, setNotif] = useState('');
+  const [batchList, setBatchList] = useState([]);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
     refreshPeserta();
     refreshAktivitas();
+    refreshBatchList();
   }, []);
 
   const refreshPeserta = async () => {
@@ -48,10 +52,16 @@ function Dashboard() {
     setAktivitas(data);
   };
 
+  const refreshBatchList = async () => {
+    const data = await getBatchList();
+    setBatchList(data.filter(b => b.aktif));
+  };
+
   // Filter peserta
   const filteredPeserta = peserta.filter(p =>
     p.nama.toLowerCase().includes(filter.nama.toLowerCase()) &&
     (filter.aktivitas ? p.aktivitas === filter.aktivitas : true) &&
+    (filter.batch ? (p.kodePerusahaan && p.kodePerusahaan.batch === filter.batch) : true) &&
     (filter.tgl ? p.tgl === filter.tgl : true)
   );
 
@@ -93,7 +103,7 @@ function Dashboard() {
       await updatePeserta(editData.id_sertif, {
         nama: editData.nama,
         aktivitas: editData.aktivitas,
-        konfirmasi_hadir: editData.konfirmasi_hadir
+        batch: editData.kodePerusahaan?.batch
       });
       await refreshPeserta();
       setShowEdit(false);
@@ -191,6 +201,7 @@ function Dashboard() {
                   filter={filter}
                   setFilter={setFilter}
                   aktivitas={aktivitas}
+                  batches={batchList.map(b => b.nama)}
                   noCard
                 />
                 <div className="mt-6">
@@ -201,6 +212,7 @@ function Dashboard() {
                     handleSelectAll={handleSelectAll}
                     handleEdit={handleEdit}
                     handleDelete={handleDelete}
+                    refreshPeserta={refreshPeserta}
                   />
                 </div>
               </div>
@@ -212,14 +224,24 @@ function Dashboard() {
 
           {/* Edit Aktivitas Tab */}
           {tab === 'aktivitas' && (
-            <EditForm
-              aktivitas={aktivitas}
-              setAktivitas={setAktivitas}
-              editAktivitas={editAktivitas}
-              setEditAktivitas={setEditAktivitas}
-              setTab={setTab} // agar bisa kembali ke dashboard setelah tambah
-              setNotif={setNotif} // agar notif muncul di dashboard
-            />
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 h-full">
+              <div className="flex-[1.2] h-full flex flex-col">
+                <EditForm
+                  aktivitas={aktivitas}
+                  setAktivitas={setAktivitas}
+                  editAktivitas={editAktivitas}
+                  setEditAktivitas={setEditAktivitas}
+                  setTab={setTab}
+                  setNotif={setNotif}
+                />
+              </div>
+              <div className="flex-[0.9] h-full flex flex-col">
+                <KelolaBatch 
+                
+                setNotif={setNotif} 
+                />
+              </div>
+            </div>
           )}
         </main>
       </div>
@@ -298,6 +320,7 @@ function Dashboard() {
         setEditData={setEditData}
         onSave={handleUpdatePeserta}
         aktivitas={aktivitas}
+        batchList={batchList}
       />
     </div>
   );

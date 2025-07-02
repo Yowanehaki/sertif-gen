@@ -61,18 +61,47 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id_sertif } = req.params;
-  const { nama, aktivitas, konfirmasi_hadir } = req.body;
-  
+  const { nama, aktivitas, konfirmasi_hadir, batch } = req.body;
   try {
-    const data = await prisma.peserta.update({
+    // Update peserta
+    const peserta = await prisma.peserta.update({
       where: { id_sertif },
-      data: { 
-        nama, 
-        aktivitas, 
-        konfirmasi_hadir: Boolean(konfirmasi_hadir)
+      data: {
+        nama,
+        aktivitas,
+        ...(typeof konfirmasi_hadir !== 'undefined' ? { konfirmasi_hadir: Boolean(konfirmasi_hadir) } : {})
       }
     });
-    res.json(data);
+    // Update batch & no_urut jika batch atau aktivitas diubah
+    if (batch || aktivitas) {
+      // Ambil kode aktivitas dari tabel Aktivitas
+      const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas || peserta.aktivitas } });
+      const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
+      const tahun = peserta.tgl_submit.getFullYear().toString();
+      // Hitung no_urut baru untuk kombinasi kode, batch, tahun
+      const count = await prisma.kodePerusahaan.count({
+        where: {
+          kode,
+          batch: batch || peserta.kodePerusahaan.batch,
+          peserta: {
+            tgl_submit: {
+              gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+              lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+            }
+          }
+        }
+      });
+      const no_urut = count + 1;
+      await prisma.kodePerusahaan.update({
+        where: { id_sertif },
+        data: {
+          batch: batch || peserta.kodePerusahaan.batch,
+          kode,
+          no_urut
+        }
+      });
+    }
+    res.json(peserta);
   } catch (error) {
     res.status(500).json({ error: 'Gagal update data', message: error.message });
   }

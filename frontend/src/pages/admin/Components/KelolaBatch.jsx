@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
+import { Settings, Trash2, Plus, X } from 'lucide-react';
 import { getBatchList, createBatch, deleteBatch, updateBatch } from '../../../services/dashboard/batch.service.js';
 import { Switch } from '@headlessui/react';
 
@@ -47,7 +47,7 @@ const KelolaBatch = ({ setNotif }) => {
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Batch</h2>
         <p className="text-gray-600">Tambah, edit, atau hapus batch peserta</p>
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-6">
         <div className="space-y-3">
           {batchList.map((b, idx) => (
             <div key={b.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
@@ -67,14 +67,14 @@ const KelolaBatch = ({ setNotif }) => {
                     className={`${b.aktif ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                   />
                 </Switch>
-                <button type="button" className="p-2 text-red-600 hover:bg-red-100 rounded-lg" onClick={() => openDelete(idx)}>
+                <button type="button" className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200" onClick={() => openDelete(idx)}>
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
           ))}
         </div>
-        <form className="flex gap-3 flex-col md:flex-row items-stretch md:items-end" onSubmit={handleAdd}>
+        <form className="flex gap-2" onSubmit={handleAdd}>
           <div className="relative flex-1">
             <Plus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -109,7 +109,7 @@ const KelolaBatch = ({ setNotif }) => {
                   <Trash2 className="w-8 h-8 text-red-600" />
                 </div>
                 <p className="text-gray-600">
-                  Yakin ingin menghapus batch <span className="font-semibold text-gray-800">{batchList[currentDeleteIdx].nama}</span>?
+                  Yakin ingin menghapus batch <span className="font-semibold text-gray-800">{batchList[currentDeleteIdx]?.nama}</span>?
                 </p>
                 <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
               </div>

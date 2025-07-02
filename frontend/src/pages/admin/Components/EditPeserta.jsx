@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-function EditPeserta({ show, onClose, editData, setEditData, onSave, aktivitas }) {
+function EditPeserta({ show, onClose, editData, setEditData, onSave, aktivitas, batchList = [] }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -42,14 +42,23 @@ function EditPeserta({ show, onClose, editData, setEditData, onSave, aktivitas }
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status Kehadiran</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Batch</label>
                 <select
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  value={editData?.konfirmasi_hadir ? 'true' : 'false'}
-                  onChange={e => setEditData({...editData, konfirmasi_hadir: e.target.value === 'true'})}
+                  value={editData?.kodePerusahaan?.batch || ''}
+                  onChange={e => setEditData({
+                    ...editData,
+                    kodePerusahaan: {
+                      ...editData.kodePerusahaan,
+                      batch: e.target.value
+                    }
+                  })}
+                  required
                 >
-                  <option value="true">Hadir</option>
-                  <option value="false">Tidak Hadir</option>
+                  <option value="" disabled>Pilih batch</option>
+                  {batchList.map(b => (
+                    <option key={b.id} value={b.nama}>{b.nama}</option>
+                  ))}
                 </select>
               </div>
             </div>

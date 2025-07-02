@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Edit, Trash2, FileText, Download } from 'lucide-react';
+import { deletePeserta } from '../../../services/dashboard/peserta.service';
 
 const TabelPeserta = ({
   filteredPeserta,
@@ -7,7 +8,8 @@ const TabelPeserta = ({
   handleSelect,
   handleSelectAll,
   handleEdit,
-  handleDelete
+  handleDelete,
+  refreshPeserta
 }) => {
   const [downloadingId, setDownloadingId] = useState(null);
 
@@ -29,6 +31,13 @@ const TabelPeserta = ({
       alert('Gagal generate sertifikat: ' + err.message);
     }
     setDownloadingId(null);
+  };
+
+  const handleDeleteRow = async (id_sertif) => {
+    if (window.confirm('Yakin hapus peserta ini?')) {
+      await deletePeserta(id_sertif);
+      if (refreshPeserta) await refreshPeserta();
+    }
   };
 
   return (
@@ -92,7 +101,7 @@ const TabelPeserta = ({
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(row)}
+                      onClick={() => handleDeleteRow(row.id_sertif)}
                       className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
                     >
                       <Trash2 className="w-4 h-4" />
