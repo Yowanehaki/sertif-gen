@@ -8,6 +8,8 @@ import TabelPeserta from './Components/TabelPeserta.jsx';
 import Filter from './Components/Filter.jsx';
 import HapusPeserta from './Components/HapusPeserta.jsx';
 import EditPeserta from './Components/EditPeserta.jsx';
+import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
+import { getAktivitas } from '../../services/dashboard/aktivitas.service';
 
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
@@ -28,18 +30,23 @@ function Dashboard() {
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [notif, setNotif] = useState('');
 
-  // Ambil data peserta dari backend saat mount
+  // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
-    fetch('http://localhost:5000/dashboard')
-      .then(res => res.json())
-      .then(data => {
-        setPeserta(data);
-        // Optional: set aktivitas unik dari data peserta
-        const aktivitasList = Array.from(new Set(data.map(p => p.aktivitas)));
-        setAktivitas(aktivitasList);
-      });
+    refreshPeserta();
+    refreshAktivitas();
   }, []);
+
+  const refreshPeserta = async () => {
+    const data = await getPeserta();
+    setPeserta(data);
+  };
+
+  const refreshAktivitas = async () => {
+    const data = await getAktivitas();
+    setAktivitas(data);
+  };
 
   // Filter peserta
   const filteredPeserta = peserta.filter(p =>
@@ -54,7 +61,7 @@ function Dashboard() {
   };
   
   const handleSelectAll = () => {
-    setSelected(selected.length === filteredPeserta.length ? [] : filteredPeserta.map(p => p.id));
+    setSelected(selected.length === filteredPeserta.length ? [] : filteredPeserta.map(p => p.id_sertif));
   };
   
   const handleEdit = (row) => {
@@ -64,6 +71,37 @@ function Dashboard() {
   
   const handleDelete = () => {
     setShowDelete(true);
+  };
+
+  // CRUD Operations
+  const handleDeletePeserta = async () => {
+    try {
+      await bulkDeletePeserta(selected);
+      await refreshPeserta();
+      setSelected([]);
+      setShowDelete(false);
+      setNotif('Peserta berhasil dihapus');
+      setTimeout(() => setNotif(''), 3000);
+    } catch (error) {
+      alert('Gagal menghapus peserta: ' + error.message);
+    }
+  };
+
+  const handleUpdatePeserta = async (e) => {
+    e.preventDefault();
+    try {
+      await updatePeserta(editData.id_sertif, {
+        nama: editData.nama,
+        aktivitas: editData.aktivitas,
+        konfirmasi_hadir: editData.konfirmasi_hadir
+      });
+      await refreshPeserta();
+      setShowEdit(false);
+      setNotif('Peserta berhasil diedit');
+      setTimeout(() => setNotif(''), 3000);
+    } catch (error) {
+      alert('Gagal update peserta: ' + error.message);
+    }
   };
 
   const sidebarItems = [
@@ -80,6 +118,13 @@ function Dashboard() {
         currentTab={tab}
         onTabChange={setTab}
       />
+
+      {/* Notifikasi */}
+      {notif && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 px-6 py-3 rounded-xl shadow-lg z-50 text-center text-sm font-medium animate-fade-in">
+          {notif}
+        </div>
+      )}
 
       {/* Mobile menu */}
       {showMobileMenu && (
@@ -172,6 +217,8 @@ function Dashboard() {
               setAktivitas={setAktivitas}
               editAktivitas={editAktivitas}
               setEditAktivitas={setEditAktivitas}
+              setTab={setTab} // agar bisa kembali ke dashboard setelah tambah
+              setNotif={setNotif} // agar notif muncul di dashboard
             />
           )}
         </main>
@@ -212,6 +259,10 @@ function Dashboard() {
                   <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required disabled={isGenerating} />
                 </div>
                 <div>
+                  <label className="block text-gray-700 font-medium mb-1">Batch</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.batch || ''} onChange={e => setGenerateData({...generateData, batch: e.target.value})} required disabled={isGenerating} placeholder="Contoh: 1, 2, dst" />
+                </div>
+                <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
                   <input type="file" accept="image/*" className="w-full" onChange={e => setGenerateData({...generateData, tandaTangan: e.target.files[0]})} disabled={isGenerating} />
                   {generateData.tandaTangan && (
@@ -234,10 +285,7 @@ function Dashboard() {
       <HapusPeserta
         show={showDelete}
         onClose={() => setShowDelete(false)}
-        onDelete={() => {
-          setPeserta(peserta.filter(p => !selected.includes(p.id)));
-          setShowDelete(false);
-        }}
+        onDelete={handleDeletePeserta}
         selected={selected}
         peserta={peserta}
       />
@@ -248,11 +296,7 @@ function Dashboard() {
         onClose={() => setShowEdit(false)}
         editData={editData}
         setEditData={setEditData}
-        onSave={e => {
-          e.preventDefault();
-          setPeserta(peserta.map(p => p.id === editData.id ? {...p, nama: editData.nama, aktivitas: editData.aktivitas} : p));
-          setShowEdit(false);
-        }}
+        onSave={handleUpdatePeserta}
         aktivitas={aktivitas}
       />
     </div>

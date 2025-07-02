@@ -48,7 +48,6 @@ const TabelPeserta = ({
               <th className="p-4 text-left font-semibold text-white">ID Sertif</th>
               <th className="p-4 text-left font-semibold text-white">Nama</th>
               <th className="p-4 text-left font-semibold text-white w-60">Aktivitas</th>
-              <th className="p-4 text-left font-semibold text-white">Batch</th>
               <th className="p-4 text-left font-semibold text-white">Tanggal Submit</th>
               <th className="p-4 text-left font-semibold text-white">Status</th>
               <th className="p-4 text-left font-semibold text-white">Aksi</th>
@@ -70,7 +69,6 @@ const TabelPeserta = ({
                   <div className="font-medium text-gray-900">{row.nama}</div>
                 </td>
                 <td className="p-4 text-gray-900 break-words max-w-xs">{row.aktivitas}</td>
-                <td className="p-4 text-gray-900 break-words max-w-xs">{row.batch || '-'}</td>
                 <td className="p-4 text-gray-600">{row.tgl_submit ? new Date(row.tgl_submit).toLocaleDateString() : '-'}</td>
                 <td className="p-4">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
@@ -92,18 +90,6 @@ const TabelPeserta = ({
                       className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDownload(row.id_sertif)}
-                      className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200"
-                      disabled={downloadingId === row.id_sertif}
-                      title="Download Sertifikat PDF"
-                    >
-                      {downloadingId === row.id_sertif ? (
-                        <span className="animate-spin"><Download className="w-4 h-4" /></span>
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
                     </button>
                   </div>
                 </td>

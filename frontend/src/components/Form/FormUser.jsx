@@ -45,9 +45,9 @@ function FormUser({
             className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200 appearance-none cursor-pointer"
           >
             <option value="" disabled hidden className="text-gray-400">Pilih kegiatan yang akan diikuti</option>
-            {activities.map((activity) => (
-              <option key={activity} value={activity}>
-                {activity}
+            {activities.map((a) => (
+              <option key={a.id} value={a.nama}>
+                {a.nama}
               </option>
             ))}
           </select>

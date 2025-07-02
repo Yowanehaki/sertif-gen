@@ -26,9 +26,8 @@ model Admin {
   password String
 }
 
-model KodePerusahaan {
-  id             Int    @id @default(autoincrement())
-  nama_aktivitas String
-  kode_aktivitas String
-  batch          String
+model Aktivitas {
+  id        Int    @id @default(autoincrement())
+  nama     String @unique
+  kode     String
 }

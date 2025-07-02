@@ -23,7 +23,6 @@ router.post('/peserta', async (req, res) => {
     const kodeAktivitas = aktivitasMap[aktivitas] || 'UNK';
     const now = new Date();
     const tahun = now.getFullYear();
-    const batch = 'VIII';
     const count = await prisma.dashboard.count({
       where: {
         aktivitas,
@@ -34,7 +33,7 @@ router.post('/peserta', async (req, res) => {
       }
     });
     const noUrut = String(count + 1).padStart(4, '0');
-    const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${batch}/${noUrut}`;
+    const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${req.body.batch || 'BATCH'}/${noUrut}`;
     const id_sertif = nanoid(12);
     const peserta = await prisma.dashboard.create({
       data: {

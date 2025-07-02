@@ -11,7 +11,7 @@ const HapusPeserta = ({ show, onClose, onDelete, selected, peserta }) => {
       </p>
     );
   } else {
-    const namaPeserta = peserta.find(p => p.id === selected[0])?.nama;
+    const namaPeserta = peserta.find(p => p.id_sertif === selected[0])?.nama;
     content = (
       <p className="text-gray-600">
         Yakin ingin menghapus peserta <span className="font-semibold text-gray-800">{namaPeserta}</span>?

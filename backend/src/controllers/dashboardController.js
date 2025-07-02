@@ -29,18 +29,32 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id_sertif } = req.params;
-  const { nama, aktivitas, tgl_submit, kode_perusahaan, konfirmasi_hadir } = req.body;
-  const data = await prisma.dashboard.update({
-    where: { id_sertif },
-    data: { nama, aktivitas, tgl_submit: new Date(tgl_submit), kode_perusahaan, konfirmasi_hadir }
-  });
-  res.json(data);
+  const { nama, aktivitas, konfirmasi_hadir } = req.body;
+  
+  try {
+    const data = await prisma.dashboard.update({
+      where: { id_sertif },
+      data: { 
+        nama, 
+        aktivitas, 
+        konfirmasi_hadir: Boolean(konfirmasi_hadir)
+      }
+    });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal update data', message: error.message });
+  }
 };
 
 exports.delete = async (req, res) => {
   const { id_sertif } = req.params;
-  await prisma.dashboard.delete({ where: { id_sertif } });
-  res.json({ success: true });
+  
+  try {
+    await prisma.dashboard.delete({ where: { id_sertif } });
+    res.json({ success: true, message: 'Peserta berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal menghapus data', message: error.message });
+  }
 };
 
 exports.generateSertifikat = async (req, res) => {
@@ -61,4 +75,22 @@ exports.generateSertifikat = async (req, res) => {
 exports.bulkUpload = async (req, res) => {
   // Dummy: implementasi parsing excel bisa ditambah
   res.json({ success: true, message: 'Bulk upload belum diimplementasi.' });
+};
+
+exports.bulkDelete = async (req, res) => {
+  console.log('Bulk delete body:', req.body); // debug log
+  const { ids } = req.body;
+  
+  try {
+    await prisma.dashboard.deleteMany({
+      where: {
+        id_sertif: {
+          in: ids
+        }
+      }
+    });
+    res.json({ success: true, message: `${ids.length} peserta berhasil dihapus` });
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal menghapus data', message: error.message });
+  }
 }; 

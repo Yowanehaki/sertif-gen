@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, Calendar, User } from 'lucide-react';
 import logo from "../assets/logo.png";
 import FormUserForm from '../components/Form/FormUser.jsx';
 import { useNavigate } from 'react-router-dom';
+import { getAktivitas } from '../services/dashboard/aktivitas.service';
 
 function FormUser() {
   const [formData, setFormData] = useState({
@@ -13,17 +14,21 @@ function FormUser() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-
-  const activities = [
-    'Seminar Digital Marketing',
-    'Try Out UTBK 2025',
-    'Seminar Kewirausahaan',
-    'Try Out CPNS 2025',
-    'Webinar Teknologi AI',
-    'Workshop Design Thinking'
-  ];
+  const [activities, setActivities] = useState([]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAktivitas = async () => {
+      try {
+        const data = await getAktivitas();
+        setActivities(data); // <-- simpan array objek, bukan hanya nama
+      } catch {
+        setActivities([]);
+      }
+    };
+    fetchAktivitas();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

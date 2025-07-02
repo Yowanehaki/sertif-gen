@@ -5,11 +5,11 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   const admin = await prisma.admin.findUnique({ where: { username } });
-  if (!admin) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!admin) return res.status(401).json({ message: 'Username atau password salah' });
   const valid = await bcrypt.compare(password, admin.password);
-  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!valid) return res.status(401).json({ message: 'Username atau password salah' });
   const token = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_SECRET, { expiresIn: '1d' });
-  res.json({ token });
+  res.json({ message: 'Login Berhasil', token });
 };
 
 exports.validate = async (req, res) => {

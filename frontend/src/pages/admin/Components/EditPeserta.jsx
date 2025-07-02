@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-function EditForm({ show, onClose, editData, setEditData, onSave, aktivitas }) {
+function EditPeserta({ show, onClose, editData, setEditData, onSave, aktivitas }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -34,7 +34,22 @@ function EditForm({ show, onClose, editData, setEditData, onSave, aktivitas }) {
                   value={editData?.aktivitas || ''}
                   onChange={e => setEditData({...editData, aktivitas: e.target.value})}
                 >
-                  {aktivitas.map(a => <option key={a} value={a}>{a}</option>)}
+                  {aktivitas.map(a => (
+                    <option key={a.id || a} value={a.nama || a}>
+                      {a.nama || a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status Kehadiran</label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={editData?.konfirmasi_hadir ? 'true' : 'false'}
+                  onChange={e => setEditData({...editData, konfirmasi_hadir: e.target.value === 'true'})}
+                >
+                  <option value="true">Hadir</option>
+                  <option value="false">Tidak Hadir</option>
                 </select>
               </div>
             </div>
@@ -60,4 +75,4 @@ function EditForm({ show, onClose, editData, setEditData, onSave, aktivitas }) {
   );
 }
 
-export default EditForm; 
+export default EditPeserta;

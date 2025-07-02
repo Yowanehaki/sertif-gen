@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ctrl = require('../controllers/aktivitasController');
+const ctrl = require('../controllers/aktivitasController.js');
 
 router.get('/', ctrl.getAll);
 router.post('/', ctrl.create);

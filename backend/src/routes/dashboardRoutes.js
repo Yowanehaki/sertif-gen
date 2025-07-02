@@ -16,6 +16,7 @@ router.put('/:id_sertif', ctrl.update);
 router.delete('/:id_sertif', ctrl.delete);
 router.put('/:id_sertif/generate', ctrl.generateSertifikat);
 router.post('/bulk', ctrl.bulkUpload);
+router.post('/bulk-delete', ctrl.bulkDelete);
 
 // Endpoint generate sertifikat (PDF) dan download langsung
 router.post('/:id_sertif/generate', async (req, res) => {
@@ -74,7 +75,6 @@ router.post('/submit', async (req, res) => {
     const kodeAktivitas = aktivitasMap[aktivitas] || 'UNK';
     const now = new Date();
     const tahun = now.getFullYear();
-    const batch = 'VIII'; // bisa diubah sesuai kebutuhan
 
     // Hitung nomor urut sertif untuk tahun+aktivitas
     const count = await prisma.dashboard.count({
@@ -87,8 +87,8 @@ router.post('/submit', async (req, res) => {
       }
     });
     const noUrut = String(count + 1).padStart(4, '0');
-
-    const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${batch}/${noUrut}`;
+    // batch diisi manual oleh admin saat generate sertifikat
+    const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${req.body.batch || 'BATCH'}/${noUrut}`;
 
     const id_sertif = nanoid(8);
     const peserta = await prisma.dashboard.create({

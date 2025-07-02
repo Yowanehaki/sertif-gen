@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Users, Home, Upload, Settings, X, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../../../assets/logo.png'
 
 export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChange }) {
   const [scrolled, setScrolled] = useState(false);
@@ -33,11 +34,11 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-25 h-8 rounded-lg flex items-center justify-center">
+              <img src={logo} alt="Logo" className="w-25 h-25 object-contain" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              SertifGen Pro
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-900 to-red-600 bg-clip-text text-transparent">
+              Genarate Sertificate
             </h1>
           </div>
           

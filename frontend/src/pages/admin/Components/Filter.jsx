@@ -22,7 +22,11 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
           onChange={e => setFilter(f => ({ ...f, aktivitas: e.target.value }))}
         >
           <option value="">Semua Aktivitas</option>
-          {aktivitas.map(a => <option key={a} value={a}>{a}</option>)}
+          {aktivitas.map(a => (
+            <option key={a.id || a} value={a.nama || a}>
+              {a.nama || a}
+            </option>
+          ))}
         </select>
         <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
       </div>

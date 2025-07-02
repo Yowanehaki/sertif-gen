@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { AdminAuthentication } from "../../services/adminAuth/adminAuth.service";
+import { AdminAuthentication } from "../../services/adminAuth/adminauth.service";
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
 

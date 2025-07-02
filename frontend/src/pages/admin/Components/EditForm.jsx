@@ -1,61 +1,86 @@
 import React, { useState } from 'react';
 import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
+import { createAktivitas, getAktivitas, updateAktivitas, deleteAktivitas } from '../../../services/dashboard/aktivitas.service';
 
-const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) => {
+const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setTab, setNotif }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentEditIdx, setCurrentEditIdx] = useState(null);
   const [currentDeleteIdx, setCurrentDeleteIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
-  const [editKodePerusahaan, setEditKodePerusahaan] = useState('');
-  const [editBatch, setEditBatch] = useState('');
-  const [newKodePerusahaan, setNewKodePerusahaan] = useState('');
-  const [newBatch, setNewBatch] = useState('');
+  const [editKode, setEditKode] = useState('');
+  const [newKode, setNewKode] = useState('');
 
   const openEdit = (idx) => {
     setCurrentEditIdx(idx);
     setEditValue(aktivitas[idx].nama);
-    setEditKodePerusahaan(aktivitas[idx].kode_perusahaan || '');
-    setEditBatch(aktivitas[idx].batch || '');
+    setEditKode(aktivitas[idx].kode || '');
     setShowEdit(true);
   };
   const openDelete = (idx) => {
     setCurrentDeleteIdx(idx);
     setShowDelete(true);
   };
-  const handleEditSave = (e) => {
+  const handleEditSave = async (e) => {
     e.preventDefault();
     if (editValue) {
-      const newAktivitas = [...aktivitas];
-      newAktivitas[currentEditIdx] = { nama: editValue, kode_perusahaan: editKodePerusahaan, batch: editBatch };
-      setAktivitas(newAktivitas);
+      const id = aktivitas[currentEditIdx].id;
+      await updateAktivitas({ id, nama: editValue, kode: editKode });
+      const data = await getAktivitas();
+      setAktivitas(data);
     }
     setShowEdit(false);
   };
-  const handleDeleteConfirm = () => {
-    setAktivitas(aktivitas.filter((_, i) => i !== currentDeleteIdx));
+  const handleDeleteConfirm = async () => {
+    const id = aktivitas[currentDeleteIdx].id;
+    await deleteAktivitas(id);
+    const data = await getAktivitas();
+    setAktivitas(data);
     setShowDelete(false);
+    if (setNotif) {
+      setNotif('Aktivitas berhasil dihapus');
+      setTimeout(() => setNotif(''), 2000);
+    }
+  };
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if(editAktivitas) {
+      await createAktivitas({ nama: editAktivitas, kode: newKode });
+      const data = await getAktivitas();
+      setAktivitas(data);
+      setNotif && setNotif('Aktivitas berhasil ditambahkan');
+      setTimeout(() => {
+        setNotif && setNotif('');
+      }, 2000);
+    }
+    setEditAktivitas('');
+    setNewKode('');
   };
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Notifikasi di atas card */}
+      {setNotif && setNotif.value && (
+        <div className="mb-4 bg-green-100 text-green-800 px-6 py-3 rounded-xl shadow text-center text-sm font-medium">
+          {setNotif.value}
+        </div>
+      )}
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Settings className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Aktivitas</h2>
-          <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas dan kode perusahaan</p>
+          <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas dan kode aktivitas</p>
         </div>
         <div className="space-y-6">
           <div className="space-y-3">
             {aktivitas.map((a, idx) => (
-              <div key={a.nama + (a.batch || '')} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+              <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
                 <div>
                   <div className="font-medium text-gray-800">{a.nama}</div>
                   <div className="text-xs text-gray-500 flex gap-2 items-center">
-                    <span>Kode Perusahaan: <span className="font-mono">{a.kode_perusahaan || '-'}</span></span>
-                    <span>| Batch: <span className="font-mono">{a.batch || '-'}</span></span>
+                    <span>Kode: <span className="font-mono">{a.kode || '-'}</span></span>
                   </div>
                 </div>
                 <div className="flex space-x-2">
@@ -69,18 +94,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
               </div>
             ))}
           </div>
-          <form
-            className="flex gap-3"
-            onSubmit={e => {
-              e.preventDefault();
-              if(editAktivitas) {
-                setAktivitas([...aktivitas, { nama: editAktivitas, kode_perusahaan: newKodePerusahaan, batch: newBatch }]);
-              }
-              setEditAktivitas('');
-              setNewKodePerusahaan('');
-              setNewBatch('');
-            }}
-          >
+          <form className="flex gap-3" onSubmit={handleAdd}>
             <div className="relative flex-1">
               <Plus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -94,16 +108,9 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
             <input
               type="text"
               className="w-48 px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              placeholder="Kode perusahaan..."
-              value={newKodePerusahaan}
-              onChange={e => setNewKodePerusahaan(e.target.value)}
-            />
-            <input
-              type="text"
-              className="w-32 px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-              placeholder="Batch..."
-              value={newBatch}
-              onChange={e => setNewBatch(e.target.value)}
+              placeholder="Kode aktivitas..."
+              value={newKode}
+              onChange={e => setNewKode(e.target.value)}
             />
             <button
               type="submit"
@@ -131,12 +138,8 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
                   <input type="text" className="w-full border rounded-lg px-3 py-2" value={editValue} onChange={e => setEditValue(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Kode Perusahaan</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={editKodePerusahaan} onChange={e => setEditKodePerusahaan(e.target.value)} required />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-medium mb-1">Batch</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={editBatch} onChange={e => setEditBatch(e.target.value)} required />
+                  <label className="block text-gray-700 font-medium mb-1">Kode Aktivitas</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={editKode} onChange={e => setEditKode(e.target.value)} required />
                 </div>
                 <div className="flex space-x-3 pt-2">
                   <button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Simpan</button>
@@ -179,4 +182,4 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas }) 
   );
 };
 
-export default EditForm; 
+export default EditForm;

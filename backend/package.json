@@ -19,19 +19,20 @@
     "prisma": "^6.10.1",
     "puppeteer": "^24.11.1",
     "sequelize": "^6.37.7",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/Index.js",
   "type": "commonJS",
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
   "scripts": {
-    "start": "node Index.js",
-    "dev": "nodemon Index.js",
+    "start": "node src/Index.js",
+    "dev": "nodemon src/Index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
