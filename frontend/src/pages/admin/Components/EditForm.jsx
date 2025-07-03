@@ -11,6 +11,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
   const [editValue, setEditValue] = useState('');
   const [editKode, setEditKode] = useState('');
   const [newKode, setNewKode] = useState('');
+  const [searchAktivitas, setSearchAktivitas] = useState('');
 
   const openEdit = (idx) => {
     setCurrentEditIdx(idx);
@@ -26,33 +27,54 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
     e.preventDefault();
     if (editValue) {
       const id = aktivitas[currentEditIdx].id;
-      await updateAktivitas({ id, nama: editValue, kode: editKode });
-      const data = await getAktivitas();
-      setAktivitas(data);
+      try {
+        await updateAktivitas({ id, nama: editValue, kode: editKode });
+        const data = await getAktivitas();
+        setAktivitas(data);
+      } catch {
+        if (setNotif) {
+          setNotif('Gagal update aktivitas (mungkin nama/kode sudah ada)');
+          setTimeout(() => setNotif(''), 2000);
+        }
+      }
     }
     setShowEdit(false);
   };
   const handleDeleteConfirm = async () => {
     const id = aktivitas[currentDeleteIdx].id;
-    await deleteAktivitas(id);
-    const data = await getAktivitas();
-    setAktivitas(data);
-    setShowDelete(false);
-    if (setNotif) {
-      setNotif('Aktivitas berhasil dihapus');
-      setTimeout(() => setNotif(''), 2000);
+    try {
+      await deleteAktivitas(id);
+      const data = await getAktivitas();
+      setAktivitas(data);
+      setShowDelete(false);
+      if (setNotif) {
+        setNotif('Aktivitas berhasil dihapus');
+        setTimeout(() => setNotif(''), 2000);
+      }
+    } catch {
+      if (setNotif) {
+        setNotif('Gagal menghapus aktivitas');
+        setTimeout(() => setNotif(''), 2000);
+      }
     }
   };
   const handleAdd = async (e) => {
     e.preventDefault();
     if(editAktivitas) {
-      await createAktivitas({ nama: editAktivitas, kode: newKode });
-      const data = await getAktivitas();
-      setAktivitas(data);
-      setNotif && setNotif('Aktivitas berhasil ditambahkan');
-      setTimeout(() => {
-        setNotif && setNotif('');
-      }, 2000);
+      try {
+        await createAktivitas({ nama: editAktivitas, kode: newKode });
+        const data = await getAktivitas();
+        setAktivitas(data);
+        setNotif && setNotif('Aktivitas berhasil ditambahkan');
+        setTimeout(() => {
+          setNotif && setNotif('');
+        }, 2000);
+      } catch {
+        if (setNotif) {
+          setNotif('Aktivitas sudah ada');
+          setTimeout(() => setNotif(''), 2000);
+        }
+      }
     }
     setEditAktivitas('');
     setNewKode('');
@@ -76,39 +98,52 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
             <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas dan kode aktivitas</p>
           </div>
           <div className="space-y-6">
-            <div className="space-y-3">
-              {aktivitas.map((a, idx) => (
-                <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
-                  <div>
-                    <div className="font-medium text-gray-800">{a.nama}</div>
-                    <div className="text-xs text-gray-500 flex gap-2 items-center">
-                      <span>Kode: <span className="font-mono">{a.kode || '-'} </span></span>
+            {/* Filter/Search */}
+            <input
+              type="text"
+              className="w-full mb-2 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              placeholder="Cari aktivitas..."
+              value={searchAktivitas}
+              onChange={e => setSearchAktivitas(e.target.value)}
+            />
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              {aktivitas
+                .filter(a =>
+                  a.nama.toLowerCase().includes(searchAktivitas.toLowerCase()) ||
+                  (a.kode || '').toLowerCase().includes(searchAktivitas.toLowerCase())
+                )
+                .map((a, idx) => (
+                  <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                    <div>
+                      <div className="font-medium text-gray-800">{a.nama}</div>
+                      <div className="text-xs text-gray-500 flex gap-2 items-center">
+                        <span>Kode: <span className="font-mono">{a.kode || '-'} </span></span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={a.aktif}
+                        onChange={async (checked) => {
+                          await updateAktivitas({ id: a.id, nama: a.nama, kode: a.kode, aktif: checked });
+                          const data = await getAktivitas();
+                          setAktivitas(data);
+                        }}
+                        className={`${a.aktif ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                      >
+                        <span className="sr-only">Aktifkan/Nonaktifkan</span>
+                        <span
+                          className={`${a.aktif ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                        />
+                      </Switch>
+                      <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button type="button" onClick={() => openDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={a.aktif}
-                      onChange={async (checked) => {
-                        await updateAktivitas({ id: a.id, nama: a.nama, kode: a.kode, aktif: checked });
-                        const data = await getAktivitas();
-                        setAktivitas(data);
-                      }}
-                      className={`${a.aktif ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                    >
-                      <span className="sr-only">Aktifkan/Nonaktifkan</span>
-                      <span
-                        className={`${a.aktif ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                      />
-                    </Switch>
-                    <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={() => openDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
             <form className="flex gap-2" onSubmit={handleAdd}>
               <div className="relative flex-1">

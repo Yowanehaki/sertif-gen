@@ -11,7 +11,7 @@ import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
 import { getAktivitas } from '../../services/dashboard/aktivitas.service';
-import { getBatchList } from '../../services/dashboard/batch.service';
+import { getBatchList, deleteBatch } from '../../services/dashboard/batch.service';
 
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
@@ -34,6 +34,8 @@ function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notif, setNotif] = useState('');
   const [batchList, setBatchList] = useState([]);
+  const [showDeleteBatch, setShowDeleteBatch] = useState(false);
+  const [currentDeleteBatchId, setCurrentDeleteBatchId] = useState(null);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -54,7 +56,7 @@ function Dashboard() {
 
   const refreshBatchList = async () => {
     const data = await getBatchList();
-    setBatchList(data.filter(b => b.aktif));
+    setBatchList(data);
   };
 
   // Filter peserta
@@ -112,6 +114,19 @@ function Dashboard() {
     } catch (error) {
       alert('Gagal update peserta: ' + error.message);
     }
+  };
+
+  const handleOpenDeleteBatch = (id) => {
+    setCurrentDeleteBatchId(id);
+    setShowDeleteBatch(true);
+  };
+
+  const handleDeleteBatch = async () => {
+    await deleteBatch(currentDeleteBatchId);
+    await refreshBatchList();
+    setShowDeleteBatch(false);
+    setNotif('Batch berhasil dihapus');
+    setTimeout(() => setNotif(''), 2000);
   };
 
   const sidebarItems = [
@@ -237,8 +252,10 @@ function Dashboard() {
               </div>
               <div className="flex-[0.9] h-full flex flex-col">
                 <KelolaBatch 
-                batchList={batchList}
-                setNotif={setNotif} 
+                  setNotif={setNotif}
+                  batchList={batchList}
+                  onOpenDeleteBatch={handleOpenDeleteBatch}
+                  refreshBatchList={refreshBatchList}
                 />
               </div>
             </div>
@@ -322,6 +339,35 @@ function Dashboard() {
         aktivitas={aktivitas}
         batchList={batchList}
       />
+
+      {/* Modal Hapus Batch */}
+      {showDeleteBatch && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Hapus Batch</h3>
+                <button onClick={() => setShowDeleteBatch(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <p className="text-gray-600">
+                  Yakin ingin menghapus batch <span className="font-semibold text-gray-800">{batchList.find(b => b.id === currentDeleteBatchId)?.nama}</span>?
+                </p>
+                <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
+              </div>
+              <div className="flex space-x-3">
+                <button onClick={handleDeleteBatch} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Hapus</button>
+                <button onClick={() => setShowDeleteBatch(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
