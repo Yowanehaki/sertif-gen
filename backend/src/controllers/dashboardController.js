@@ -1,5 +1,16 @@
 const prisma = require('../config/prisma');
-const { nanoid } = require('nanoid');
+const { nanoid, customAlphabet } = require('nanoid');
+
+// Fungsi untuk generate id_sertif: 8 karakter, huruf kecil & angka, minimal 2 angka
+function generateIdWithDigits(minDigits = 2, length = 8) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const nanoidCustom = customAlphabet(alphabet, length);
+  let id;
+  do {
+    id = nanoidCustom();
+  } while ((id.match(/\d/g) || []).length < minDigits);
+  return id;
+}
 
 exports.getAll = async (req, res) => {
   const { nama, aktivitas, tgl_submit } = req.query;
@@ -24,7 +35,7 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   const { nama, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
-  const id_sertif = nanoid(8);
+  const id_sertif = generateIdWithDigits(2, 8);
   const tahun = new Date(tgl_submit).getFullYear().toString();
 
   // Hitung no_urut berdasarkan kombinasi kode, tahun, batch

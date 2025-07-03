@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { nanoid } = require('nanoid');
+const { nanoid, customAlphabet } = require('nanoid');
 const prisma = require('../config/prisma');
 const router = express.Router();
 const XLSX = require('xlsx');
@@ -50,7 +50,7 @@ router.post('/excel', async (req, res) => {
         const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${batch}/${noUrut}`;
         await prisma.dashboard.create({
           data: {
-            id_sertif: nanoid(12),
+            id_sertif: generateIdWithDigits(2, 12),
             nama: row.Nama,
             aktivitas: row.Aktivitas,
             kode_perusahaan: companyCode,
@@ -65,6 +65,16 @@ router.post('/excel', async (req, res) => {
     res.status(500).json({ message: 'Gagal upload Excel', error: err.message });
   }
 });
+
+function generateIdWithDigits(minDigits = 2, length = 12) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const nanoidCustom = customAlphabet(alphabet, length);
+  let id;
+  do {
+    id = nanoidCustom();
+  } while ((id.match(/\d/g) || []).length < minDigits);
+  return id;
+}
 
 module.exports = router; 
 //protect

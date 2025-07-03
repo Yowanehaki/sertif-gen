@@ -6,6 +6,7 @@ const prisma = require('../config/prisma');
 const { PuppeteerCertificateGenerator } = require('../utils/puppeteer');
 const fs = require('fs');
 const path = require('path');
+const { customAlphabet } = require('nanoid');
 
 //protect
 
@@ -92,7 +93,7 @@ router.post('/submit', async (req, res) => {
       }
     });
     const no_urut = count + 1;
-    const id_sertif = require('nanoid').nanoid(8);
+    const id_sertif = generateIdWithDigits(2, 8);
 
     // 1. Create Peserta
     const peserta = await prisma.peserta.create({
@@ -118,5 +119,15 @@ router.post('/submit', async (req, res) => {
     res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
   }
 });
+
+function generateIdWithDigits(minDigits = 2, length = 8) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const nanoidCustom = customAlphabet(alphabet, length);
+  let id;
+  do {
+    id = nanoidCustom();
+  } while ((id.match(/\d/g) || []).length < minDigits);
+  return id;
+}
 
 module.exports = router; 

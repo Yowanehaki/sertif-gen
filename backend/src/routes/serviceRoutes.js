@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { nanoid } = require('nanoid');
+const { nanoid, customAlphabet } = require('nanoid');
 const prisma = require('../config/prisma');
 
 const kodePerusahaan = 'GRH';
@@ -12,6 +12,16 @@ const aktivitasMap = {
   'Webinar Teknologi AI': 'WTAI',
   'Workshop Design Thinking': 'WDT',
 };
+
+function generateIdWithDigits(minDigits = 2, length = 12) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const nanoidCustom = customAlphabet(alphabet, length);
+  let id;
+  do {
+    id = nanoidCustom();
+  } while ((id.match(/\d/g) || []).length < minDigits);
+  return id;
+}
 
 // Endpoint untuk memasukkan data peserta
 router.post('/peserta', async (req, res) => {
@@ -34,7 +44,7 @@ router.post('/peserta', async (req, res) => {
     });
     const noUrut = String(count + 1).padStart(4, '0');
     const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${req.body.batch || 'BATCH'}/${noUrut}`;
-    const id_sertif = nanoid(12);
+    const id_sertif = generateIdWithDigits(2, 12);
     const peserta = await prisma.dashboard.create({
       data: {
         id_sertif,
