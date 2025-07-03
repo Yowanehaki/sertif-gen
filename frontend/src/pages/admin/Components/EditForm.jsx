@@ -3,7 +3,7 @@ import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
 import { createAktivitas, getAktivitas, updateAktivitas, deleteAktivitas } from '../../../services/dashboard/aktivitas.service.js';
 import { Switch } from '@headlessui/react';
 
-const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif }) => {
+const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif, aktivitasBaru = [] }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentEditIdx, setCurrentEditIdx] = useState(null);
@@ -112,38 +112,43 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
                   a.nama.toLowerCase().includes(searchAktivitas.toLowerCase()) ||
                   (a.kode || '').toLowerCase().includes(searchAktivitas.toLowerCase())
                 )
-                .map((a, idx) => (
-                  <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
-                    <div>
-                      <div className="font-medium text-gray-800">{a.nama}</div>
-                      <div className="text-xs text-gray-500 flex gap-2 items-center">
-                        <span>Kode: <span className="font-mono">{a.kode || '-'} </span></span>
+                .map((a, idx) => {
+                  // Jika aktivitasBaru mengandung nama aktivitas ini, paksa aktif=false
+                  const isBaru = aktivitasBaru.includes(a.nama);
+                  return (
+                    <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                      <div>
+                        <div className="font-medium text-gray-800">{a.nama}</div>
+                        <div className="text-xs text-gray-500 flex gap-2 items-center">
+                          <span>Kode: <span className="font-mono">{a.kode || '-'} </span></span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={isBaru ? false : a.aktif}
+                          onChange={async (checked) => {
+                            if (isBaru && checked) return; // Tidak bisa diaktifkan langsung
+                            await updateAktivitas({ id: a.id, nama: a.nama, kode: a.kode, aktif: checked });
+                            const data = await getAktivitas();
+                            setAktivitas(data);
+                          }}
+                          className={`${isBaru ? 'bg-gray-300' : (a.aktif ? 'bg-green-500' : 'bg-gray-300')} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                        >
+                          <span className="sr-only">Aktifkan/Nonaktifkan</span>
+                          <span
+                            className={`${isBaru ? 'translate-x-1' : (a.aktif ? 'translate-x-6' : 'translate-x-1')} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                          />
+                        </Switch>
+                        <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button type="button" onClick={() => openDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={a.aktif}
-                        onChange={async (checked) => {
-                          await updateAktivitas({ id: a.id, nama: a.nama, kode: a.kode, aktif: checked });
-                          const data = await getAktivitas();
-                          setAktivitas(data);
-                        }}
-                        className={`${a.aktif ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                      >
-                        <span className="sr-only">Aktifkan/Nonaktifkan</span>
-                        <span
-                          className={`${a.aktif ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                        />
-                      </Switch>
-                      <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button type="button" onClick={() => openDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
             <form className="flex gap-2" onSubmit={handleAdd}>
               <div className="relative flex-1">

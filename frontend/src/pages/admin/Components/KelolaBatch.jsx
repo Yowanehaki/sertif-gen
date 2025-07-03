@@ -3,7 +3,7 @@ import { Settings, Trash2, Plus } from 'lucide-react';
 import { createBatch, updateBatch } from '../../../services/dashboard/batch.service.js';
 import { Switch } from '@headlessui/react';
 
-const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList }) => {
+const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList, batchBaru = [] }) => {
   const [newBatch, setNewBatch] = useState('');
   const [searchBatch, setSearchBatch] = useState('');
 
@@ -48,42 +48,46 @@ const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList 
           {[...batchList]
             .sort((a, b) => a.id - b.id)
             .filter(b => b.nama.toLowerCase().includes(searchBatch.toLowerCase()))
-            .map((b) => (
-              <div key={b.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
-                <div className="font-medium text-gray-800">{b.nama}</div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={b.aktif}
-                    onChange={async (checked) => {
-                      await updateBatch(b.id, checked);
-                      await refreshBatchList();
-                    }}
-                    className={`${b.aktif ? 'bg-green-500' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                  >
-                    <span className="sr-only">Aktifkan/Nonaktifkan</span>
-                    <span
-                      className={`${b.aktif ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                    />
-                  </Switch>
-                  <button
-                    type="button"
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
-                    onClick={() => {
-                      if (b.aktif) {
-                        if (setNotif) {
-                          setNotif('Nonaktifkan batch ini terlebih dahulu sebelum menghapus.');
-                          setTimeout(() => setNotif(''), 2000);
+            .map((b) => {
+              const isBaru = batchBaru.includes(b.nama);
+              return (
+                <div key={b.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
+                  <div className="font-medium text-gray-800">{b.nama}</div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={isBaru ? false : b.aktif}
+                      onChange={async (checked) => {
+                        if (isBaru && checked) return;
+                        await updateBatch(b.id, checked);
+                        await refreshBatchList();
+                      }}
+                      className={`${isBaru ? 'bg-gray-300' : (b.aktif ? 'bg-green-500' : 'bg-gray-300')} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                    >
+                      <span className="sr-only">Aktifkan/Nonaktifkan</span>
+                      <span
+                        className={`${isBaru ? 'translate-x-1' : (b.aktif ? 'translate-x-6' : 'translate-x-1')} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                      />
+                    </Switch>
+                    <button
+                      type="button"
+                      className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
+                      onClick={() => {
+                        if (b.aktif) {
+                          if (setNotif) {
+                            setNotif('Nonaktifkan batch ini terlebih dahulu sebelum menghapus.');
+                            setTimeout(() => setNotif(''), 2000);
+                          }
+                          return;
                         }
-                        return;
-                      }
-                      onOpenDeleteBatch(b.id);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                        onOpenDeleteBatch(b.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
         <form className="flex gap-2" onSubmit={handleAdd}>
           <div className="relative flex-1">

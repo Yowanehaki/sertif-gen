@@ -1,6 +1,8 @@
 const XLSX = require('xlsx');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { customAlphabet } = require('nanoid');
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
 
 // Mapping aktivitas ke kodeAktivitas
 const aktivitasMap = {
@@ -27,35 +29,22 @@ class ExcelService {
       headers.forEach((header, idx) => {
         if (!header) return;
         const h = header.toString().trim().toLowerCase();
-        if (h === 'nourut') headerMapping.noUrut = idx;
         if (h === 'nama') headerMapping.nama = idx;
         if (h === 'aktivitas') headerMapping.aktivitas = idx;
         if (h === 'batch') headerMapping.batch = idx;
       });
       // Validasi kolom wajib
-      ['noUrut', 'nama', 'aktivitas', 'batch'].forEach(field => {
+      ['nama', 'aktivitas', 'batch'].forEach(field => {
         if (headerMapping[field] === undefined) throw new Error(`Kolom ${field} tidak ditemukan`);
       });
       // Proses data
-      const tahun = new Date().getFullYear();
-      const kodePerusahaan = 'GRH';
       return dataRows
         .filter(row => row.some(cell => cell !== null && cell !== undefined && cell !== ''))
         .map(row => {
-          const noUrut = String(row[headerMapping.noUrut]).padStart(4, '0');
           const nama = row[headerMapping.nama];
           const aktivitas = row[headerMapping.aktivitas];
           const batch = row[headerMapping.batch];
-          const kodeAktivitas = aktivitasMap[aktivitas] || 'UNK';
-          const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${batch}/${noUrut}`;
-          return {
-            nama,
-            aktivitas,
-            batch,
-            kode_perusahaan: companyCode,
-            tgl_submit: new Date(),
-            konfirmasi_hadir: true,
-          };
+          return { nama, aktivitas, batch };
         });
     } catch (error) {
       throw new Error(`Error parsing Excel file: ${error.message}`);
@@ -65,11 +54,94 @@ class ExcelService {
   static async saveParticipantsToDatabase(participants) {
     try {
       const saved = [];
+      const aktivitasBaruSet = new Set();
+      const batchBaruSet = new Set();
+      const now = new Date();
+      // Ambil semua aktivitas yang sudah terdaftar
+      const aktivitasDB = await prisma.aktivitas.findMany();
+      const aktivitasTerdaftar = new Set(aktivitasDB.map(a => a.nama));
+      // Ambil semua batch yang sudah terdaftar
+      const batchDB = await prisma.batch.findMany();
+      const batchTerdaftar = new Set(batchDB.map(b => b.nama));
+      // Buat batch baru di database jika ada batchBaru
+      for (const batchNama of participants.map(p => p.batch)) {
+        if (!batchTerdaftar.has(batchNama)) {
+          await prisma.batch.upsert({
+            where: { nama: batchNama },
+            update: {},
+            create: { nama: batchNama, aktif: false },
+          });
+          batchTerdaftar.add(batchNama);
+        }
+      }
       for (const p of participants) {
-        const peserta = await prisma.dashboard.create({ data: p });
+        // Deteksi aktivitas baru
+        if (!aktivitasTerdaftar.has(p.aktivitas)) {
+          aktivitasBaruSet.add(p.aktivitas);
+        }
+        // Deteksi batch baru
+        if (!batchTerdaftar.has(p.batch)) {
+          batchBaruSet.add(p.batch);
+        }
+        // Cek apakah peserta sudah ada (berdasarkan nama, aktivitas, batch di kodePerusahaan)
+        let peserta = await prisma.peserta.findFirst({
+          where: {
+            nama: p.nama,
+            aktivitas: p.aktivitas,
+            kodePerusahaan: {
+              batch: p.batch
+            }
+          },
+          include: { kodePerusahaan: true }
+        });
+        let id_sertif = peserta ? peserta.id_sertif : nanoid();
+        // Ambil tahun dari tanggal submit/upload
+        const tahun = now.getFullYear();
+        // Ambil kode aktivitas dari tabel Aktivitas
+        const aktivitasObj = await prisma.aktivitas.findUnique({ where: { nama: p.aktivitas } });
+        const kodeAktivitas = aktivitasObj ? aktivitasObj.kode : '';
+        // Hitung nomor urut untuk kombinasi aktivitas, batch, tahun
+        const count = await prisma.kodePerusahaan.count({
+          where: {
+            batch: p.batch,
+            kode: kodeAktivitas,
+            peserta: {
+              aktivitas: p.aktivitas,
+              tgl_submit: {
+                gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+                lte: new Date(`${tahun}-12-31T23:59:59.999Z`),
+              },
+            },
+          },
+        });
+        const no_urut = count + 1;
+        // Insert jika belum ada
+        if (!peserta) {
+          peserta = await prisma.peserta.create({
+            data: {
+              id_sertif,
+              nama: p.nama,
+              aktivitas: p.aktivitas,
+              tgl_submit: now,
+              konfirmasi_hadir: true,
+              kodePerusahaan: {
+                create: {
+                  kode: kodeAktivitas,
+                  batch: p.batch,
+                  no_urut
+                }
+              }
+            },
+            include: { kodePerusahaan: true }
+          });
+        }
         saved.push(peserta);
       }
-      return saved;
+      return {
+        peserta: saved,
+        aktivitasBaru: Array.from(aktivitasBaruSet),
+        batchBaru: Array.from(batchBaruSet),
+      };
     } catch (error) {
       throw new Error(`Error saving to database: ${error.message}`);
     }

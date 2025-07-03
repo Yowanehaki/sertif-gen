@@ -10,7 +10,7 @@ exports.create = async (req, res) => {
   // Cek duplikat
   const exists = await prisma.aktivitas.findFirst({ where: { nama } });
   if (exists) return res.status(400).json({ error: 'Aktivitas sudah ada' });
-  await prisma.aktivitas.create({ data: { nama, kode } });
+  await prisma.aktivitas.create({ data: { nama, kode, aktif: false } });
   res.json({ success: true });
 };
 

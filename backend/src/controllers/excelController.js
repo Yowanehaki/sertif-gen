@@ -40,7 +40,9 @@ class ExcelController {
       }
 
       // Save to database
-      const savedCertificates = await ExcelService.saveParticipantsToDatabase(participants);
+      const result = await ExcelService.saveParticipantsToDatabase(participants);
+      const savedCertificates = result.peserta;
+      const aktivitasBaru = result.aktivitasBaru;
 
       // Clean up uploaded file
       fs.unlinkSync(filePath);
@@ -50,7 +52,8 @@ class ExcelController {
         message: `Berhasil mengupload ${savedCertificates.length} peserta`,
         data: {
           totalUploaded: savedCertificates.length,
-          certificates: savedCertificates
+          certificates: savedCertificates,
+          aktivitasBaru
         }
       });
 

@@ -7,6 +7,7 @@ const downloadRoutes = require('./routes/downloadRoutes.js');
 const uploadRoutes = require('./routes/uploadRoutes.js');
 const serviceRoutes = require('./routes/serviceRoutes.js');
 const batchRoutes = require('./routes/batchRoutes');
+const excelRoutes = require('./routes/excelRoutes.js');
 const path = require('path');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/download', downloadRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/service', serviceRoutes);
 app.use('/batch', batchRoutes);
+app.use('/api/excel', excelRoutes);
 
 // Static serve for generated certificates and signatures
 app.use('/generated-certificates', express.static(path.join(__dirname, 'generated-certificates')));

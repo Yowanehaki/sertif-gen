@@ -9,8 +9,9 @@ import Filter from './Components/Filter.jsx';
 import HapusPeserta from './Components/HapusPeserta.jsx';
 import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
+import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
-import { getAktivitas } from '../../services/dashboard/aktivitas.service';
+import { getAktivitas, tambahAktivitas } from '../../services/dashboard/aktivitas.service';
 import { getBatchList, deleteBatch } from '../../services/dashboard/batch.service';
 
 function Dashboard() {
@@ -37,6 +38,8 @@ function Dashboard() {
   const [batchList, setBatchList] = useState([]);
   const [showDeleteBatch, setShowDeleteBatch] = useState(false);
   const [currentDeleteBatchId, setCurrentDeleteBatchId] = useState(null);
+  const [aktivitasBaru, setAktivitasBaru] = useState([]);
+  const [showTambahAktivitas, setShowTambahAktivitas] = useState(false);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -44,6 +47,11 @@ function Dashboard() {
     refreshAktivitas();
     refreshBatchList();
   }, []);
+
+  // Tampilkan modal tambah aktivitas baru setiap kali aktivitasBaru berubah
+  useEffect(() => {
+    if (aktivitasBaru.length > 0) setShowTambahAktivitas(true);
+  }, [aktivitasBaru]);
 
   const refreshPeserta = async () => {
     const data = await getPeserta();
@@ -153,6 +161,18 @@ function Dashboard() {
     setTimeout(() => setNotif(''), 2000);
   };
 
+  const handleTambahAktivitas = async (data) => {
+    // data: [{ nama, kode }]
+    for (const item of data) {
+      await tambahAktivitas(item.nama, item.kode);
+    }
+    setShowTambahAktivitas(false);
+    setAktivitasBaru([]);
+    await refreshAktivitas();
+    setNotif('Aktivitas berhasil ditambahkan');
+    setTimeout(() => setNotif(''), 2000);
+  };
+
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'upload', label: 'Upload Excel', icon: Upload },
@@ -211,6 +231,7 @@ function Dashboard() {
           peserta={peserta}
           aktivitas={aktivitas}
           sidebarItems={sidebarItems}
+          aktivitasBaru={aktivitasBaru}
         />
 
         {/* Main Content */}
@@ -278,7 +299,7 @@ function Dashboard() {
           )}
 
           {/* Upload Tab */}
-          {tab === 'upload' && <UploadExcel />}
+          {tab === 'upload' && <UploadExcel onAktivitasBaru={setAktivitasBaru} />}
 
           {/* Edit Aktivitas Tab */}
           {tab === 'aktivitas' && (
@@ -291,10 +312,11 @@ function Dashboard() {
                   setEditAktivitas={setEditAktivitas}
                   setTab={setTab}
                   setNotif={setNotif}
+                  aktivitasBaru={aktivitasBaru}
                 />
               </div>
               <div className="flex-[0.9] h-full flex flex-col">
-                <KelolaBatch 
+                <KelolaBatch
                   setNotif={setNotif}
                   batchList={batchList}
                   onOpenDeleteBatch={handleOpenDeleteBatch}
@@ -339,10 +361,6 @@ function Dashboard() {
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanggal Terbit</label>
                   <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required disabled={isGenerating} />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-medium mb-1">Batch</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2" value={generateData.batch || ''} onChange={e => setGenerateData({...generateData, batch: e.target.value})} required disabled={isGenerating} placeholder="Contoh: 1, 2, dst" />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
@@ -414,6 +432,14 @@ function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Modal Tambah Aktivitas Baru */}
+      <TambahAktivitasBaruModal
+        show={showTambahAktivitas}
+        aktivitasBaru={aktivitasBaru}
+        onClose={() => setShowTambahAktivitas(false)}
+        onSubmit={handleTambahAktivitas}
+      />
     </div>
   );
 }

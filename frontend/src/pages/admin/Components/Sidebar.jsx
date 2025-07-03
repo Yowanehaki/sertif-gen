@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems }) {
+function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [] }) {
   return (
     <aside className="w-72 min-h-screen h-full bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 hidden md:block fixed left-0 top-0 md:top-20 z-30">
       <div className="space-y-3">
@@ -43,6 +43,19 @@ function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems }) {
           </div>
         </div>
       </div>
+      {/* Warning aktivitas baru */}
+      {aktivitasBaru && aktivitasBaru.length > 0 && (
+        <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-2xl text-red-800 animate-pulse">
+          <div className="font-bold mb-2">Peringatan Aktivitas Baru!</div>
+          <div className="text-sm mb-1">Aktivitas berikut belum terdaftar:</div>
+          <ul className="list-disc ml-5 text-sm">
+            {aktivitasBaru.map((a, i) => (
+              <li key={i}>{a}</li>
+            ))}
+          </ul>
+          <div className="mt-2 text-xs">Silakan daftarkan aktivitas & kode-nya di menu <b>Kelola Aktivitas</b> sebelum generate sertifikat.</div>
+        </div>
+      )}
     </aside>
   );
 }

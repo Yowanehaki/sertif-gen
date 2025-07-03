@@ -18,4 +18,9 @@ export const updateAktivitas = async (payload) => {
 export const deleteAktivitas = async (id) => {
   const { data } = await api.delete('/aktivitas', { data: { id } });
   return data;
+};
+
+export const tambahAktivitas = async (nama, kode) => {
+  const { data } = await api.post('/aktivitas', { nama, kode });
+  return data;
 }; 
