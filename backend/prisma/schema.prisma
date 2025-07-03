@@ -46,3 +46,9 @@ model Batch {
   nama  String @unique
   aktif Boolean @default(true)
 }
+
+model Settings {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  value   String
+}

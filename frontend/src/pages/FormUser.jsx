@@ -5,6 +5,8 @@ import FormUserForm from '../components/Form/FormUser.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getAktivitas } from '../services/dashboard/aktivitas.service';
 import { getBatchList } from '../services/dashboard/batch.service';
+import { getFormUserStatus } from '../services/dashboard/api';
+import Nonactive from './Nonactive.jsx';
 
 function FormUser() {
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ function FormUser() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [activities, setActivities] = useState([]);
   const [batchList, setBatchList] = useState([]);
+  const [formUserAktif, setFormUserAktif] = useState(null);
 
   const navigate = useNavigate();
 
@@ -38,8 +41,17 @@ function FormUser() {
         setBatchList([]);
       }
     };
+    const fetchFormUserStatus = async () => {
+      try {
+        const aktif = await getFormUserStatus();
+        setFormUserAktif(aktif);
+      } catch {
+        setFormUserAktif(true);
+      }
+    };
     fetchAktivitas();
     fetchBatch();
+    fetchFormUserStatus();
   }, []);
 
   const handleInputChange = (e) => {
@@ -99,6 +111,13 @@ function FormUser() {
     }
     setIsSubmitting(false);
   };
+
+  if (formUserAktif === null) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Memuat status form...</div>;
+  }
+  if (!formUserAktif) {
+    return <Nonactive />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 p-5 py-6 md:p-6 lg:p-10 ">

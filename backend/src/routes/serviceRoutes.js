@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { nanoid, customAlphabet } = require('nanoid');
 const prisma = require('../config/prisma');
+const settingsController = require('../controllers/settingsController');
 
 const kodePerusahaan = 'GRH';
 const aktivitasMap = {
@@ -60,6 +61,10 @@ router.post('/peserta', async (req, res) => {
     res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
   }
 });
+
+// Endpoint untuk status FormUser
+router.get('/settings/form-user', settingsController.getFormUserStatus);
+router.post('/settings/form-user', settingsController.setFormUserStatus);
 
 module.exports = router; 
 

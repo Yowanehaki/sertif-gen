@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Users, Home, Upload, Settings, X, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo.png'
+import { getFormUserStatus, setFormUserStatus } from '../../../services/dashboard/api';
 
-export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChange }) {
+export default function NavigationMenu({ currentTab, onTabChange }) {
   const [scrolled, setScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
+  const [formUserAktif, setFormUserAktif] = useState(true);
+  const [loadingFormUser, setLoadingFormUser] = useState(false);
+  const [notif, setNotif] = useState('');
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -24,6 +28,37 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingFormUser(true);
+        const aktif = await getFormUserStatus();
+        setFormUserAktif(aktif);
+      } catch {
+        setNotif('Gagal mengambil status FormUser');
+        setTimeout(() => setNotif(''), 2000);
+      } finally {
+        setLoadingFormUser(false);
+      }
+    })();
+  }, []);
+
+  const handleToggleFormUser = async () => {
+    try {
+      setLoadingFormUser(true);
+      const newStatus = !formUserAktif;
+      await setFormUserStatus(newStatus);
+      setFormUserAktif(newStatus);
+      setNotif(`FormUser ${newStatus ? 'diaktifkan' : 'dinonaktifkan'}`);
+      setTimeout(() => setNotif(''), 2000);
+    } catch {
+      setNotif('Gagal update status FormUser');
+      setTimeout(() => setNotif(''), 2000);
+    } finally {
+      setLoadingFormUser(false);
+    }
+  };
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -45,7 +80,20 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Users className="w-4 h-4" />
-              <span>{totalPeserta} Peserta</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-gray-700 text-xs">FormUser</span>
+              <button
+                onClick={handleToggleFormUser}
+                disabled={loadingFormUser}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${formUserAktif ? 'bg-green-500' : 'bg-gray-300'}`}
+                style={{ minWidth: 44 }}
+              >
+                <span className="sr-only">Aktifkan/Nonaktifkan FormUser</span>
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formUserAktif ? 'translate-x-6' : 'translate-x-1'}`}
+                />
+              </button>
             </div>
             <button onClick={() => setShowLogout(true)} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
               Logout
@@ -74,7 +122,6 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
             <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
               <div className="flex items-center space-x-2">
                 <Users className="w-4 h-4" />
-                <span>{totalPeserta} Peserta</span>
               </div>
             </div>
             {/* Navigation tabs for mobile */}
@@ -131,6 +178,12 @@ export default function NavigationMenu({ totalPeserta = 0, currentTab, onTabChan
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {/* Notifikasi */}
+      {notif && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 px-6 py-3 rounded-xl shadow-lg z-50 text-center text-sm font-medium animate-fade-in">
+          {notif}
         </div>
       )}
     </nav>

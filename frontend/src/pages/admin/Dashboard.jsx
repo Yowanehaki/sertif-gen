@@ -163,7 +163,6 @@ function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Navbar */}
       <NavigationMenu 
-        totalPeserta={peserta.length}
         currentTab={tab}
         onTabChange={setTab}
       />
