@@ -8,7 +8,6 @@ const uploadRoutes = require('./routes/uploadRoutes.js');
 const serviceRoutes = require('./routes/serviceRoutes.js');
 const batchRoutes = require('./routes/batchRoutes');
 const path = require('path');
-const { createDefaultAdmin } = require('./models/userAdmin.js');
 
 const app = express();
 app.use(cors());
@@ -29,7 +28,6 @@ app.use('/uploads/signatures', express.static(path.join(__dirname, 'uploads/sign
 app.get('/', (req, res) => res.send('Sertif-Gen API Ready!'));
 
 (async () => {
-  await createDefaultAdmin();
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 })();

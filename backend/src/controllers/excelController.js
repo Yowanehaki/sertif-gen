@@ -1,4 +1,4 @@
-const ExcelService = require('../services/excelService');
+const ExcelService = require('../services/ExcelService');
 const path = require('path');
 const fs = require('fs');
 

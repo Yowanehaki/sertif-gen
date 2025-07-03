@@ -20,5 +20,4 @@ const getAdmin = async () => {
 module.exports = {
   createAdmin,
   getAdmin,
-  createDefaultAdmin,
 };
