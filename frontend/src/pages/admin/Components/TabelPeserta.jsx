@@ -9,7 +9,9 @@ const TabelPeserta = ({
   handleSelectAll,
   handleEdit,
   handleDelete,
-  refreshPeserta
+  refreshPeserta,
+  handleDeleteSingle,
+  setNotif
 }) => {
   const [downloadingId, setDownloadingId] = useState(null);
 
@@ -28,16 +30,12 @@ const TabelPeserta = ({
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Gagal generate sertifikat: ' + err.message);
+      if (setNotif) {
+        setNotif('Gagal generate sertifikat: ' + err.message);
+        setTimeout(() => setNotif(''), 2000);
+      }
     }
     setDownloadingId(null);
-  };
-
-  const handleDeleteRow = async (id_sertif) => {
-    if (window.confirm('Yakin hapus peserta ini?')) {
-      await deletePeserta(id_sertif);
-      if (refreshPeserta) await refreshPeserta();
-    }
   };
 
   return (
@@ -84,7 +82,10 @@ const TabelPeserta = ({
                     ? `(${row.kodePerusahaan.batch}/${String(row.kodePerusahaan.no_urut).padStart(4, '0')})`
                     : '-'
                 }</td>
-                <td className="p-4 text-gray-600">{row.tgl_submit ? new Date(row.tgl_submit).toLocaleDateString() : '-'}</td>
+                <td className="p-4 text-gray-600">{row.tgl_submit ? (() => {
+                  const d = new Date(row.tgl_submit);
+                  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                })() : '-'}</td>
                 <td className="p-4">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                     row.konfirmasi_hadir ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -101,7 +102,7 @@ const TabelPeserta = ({
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteRow(row.id_sertif)}
+                      onClick={() => handleDeleteSingle(row.id_sertif)}
                       className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
                     >
                       <Trash2 className="w-4 h-4" />

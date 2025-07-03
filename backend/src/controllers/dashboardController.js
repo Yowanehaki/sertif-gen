@@ -109,8 +109,9 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   const { id_sertif } = req.params;
-  
   try {
+    // Hapus kodePerusahaan dulu
+    await prisma.kodePerusahaan.deleteMany({ where: { id_sertif } });
     await prisma.peserta.delete({ where: { id_sertif } });
     res.json({ success: true, message: 'Peserta berhasil dihapus' });
   } catch (error) {
@@ -139,17 +140,11 @@ exports.bulkUpload = async (req, res) => {
 };
 
 exports.bulkDelete = async (req, res) => {
-  console.log('Bulk delete body:', req.body); // debug log
   const { ids } = req.body;
-  
   try {
-    await prisma.peserta.deleteMany({
-      where: {
-        id_sertif: {
-          in: ids
-        }
-      }
-    });
+    // Hapus kodePerusahaan dulu
+    await prisma.kodePerusahaan.deleteMany({ where: { id_sertif: { in: ids } } });
+    await prisma.peserta.deleteMany({ where: { id_sertif: { in: ids } } });
     res.json({ success: true, message: `${ids.length} peserta berhasil dihapus` });
   } catch (error) {
     res.status(500).json({ error: 'Gagal menghapus data', message: error.message });

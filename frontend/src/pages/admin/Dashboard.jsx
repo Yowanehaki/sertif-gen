@@ -19,6 +19,7 @@ function Dashboard() {
   const [selected, setSelected] = useState([]);
   const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '' });
   const [showDelete, setShowDelete] = useState(false);
+  const [selectedSingleDelete, setSelectedSingleDelete] = useState(null);
   const [aktivitas, setAktivitas] = useState([]);
   const [editAktivitas, setEditAktivitas] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -59,12 +60,24 @@ function Dashboard() {
     setBatchList(data);
   };
 
+  // Helper untuk format tanggal dd/mm/yyyy
+  function formatDateDMY(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   // Filter peserta
   const filteredPeserta = peserta.filter(p =>
     p.nama.toLowerCase().includes(filter.nama.toLowerCase()) &&
     (filter.aktivitas ? p.aktivitas === filter.aktivitas : true) &&
     (filter.batch ? (p.kodePerusahaan && p.kodePerusahaan.batch === filter.batch) : true) &&
-    (filter.tgl ? p.tgl === filter.tgl : true)
+    (filter.tgl
+      ? formatDateDMY(p.tgl_submit || p.tgl) === formatDateDMY(filter.tgl)
+      : true)
   );
 
   // Handler functions
@@ -85,12 +98,23 @@ function Dashboard() {
     setShowDelete(true);
   };
 
+  // Untuk hapus satu peserta dari TabelPeserta
+  const handleDeleteSingle = (id_sertif) => {
+    setSelectedSingleDelete(id_sertif);
+    setShowDelete(true);
+  };
+
   // CRUD Operations
   const handleDeletePeserta = async () => {
     try {
-      await bulkDeletePeserta(selected);
+      let idsToDelete = selected;
+      if (selectedSingleDelete) {
+        idsToDelete = [selectedSingleDelete];
+      }
+      await bulkDeletePeserta(idsToDelete);
       await refreshPeserta();
       setSelected([]);
+      setSelectedSingleDelete(null);
       setShowDelete(false);
       setNotif('Peserta berhasil dihapus');
       setTimeout(() => setNotif(''), 3000);
@@ -202,11 +226,29 @@ function Dashboard() {
                     <p className="text-gray-600">Kelola data peserta dan generate sertifikat dengan mudah</p>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <button onClick={() => setShowGenerate(true)} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <button
+                      onClick={() => setShowGenerate(true)}
+                      className={
+                        'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
+                        (selected.length === 0
+                          ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white')
+                      }
+                      disabled={selected.length === 0}
+                    >
                       <FileText className="w-4 h-4" />
                       <span>Generate Sertifikat</span>
                     </button>
-                    <button onClick={() => setShowDelete(true)} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <button
+                      onClick={() => setShowDelete(true)}
+                      className={
+                        'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
+                        (selected.length === 0
+                          ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white')
+                      }
+                      disabled={selected.length === 0}
+                    >
                       <Trash2 className="w-4 h-4" />
                       <span>Hapus Terpilih ({selected.length})</span>
                     </button>
@@ -227,7 +269,9 @@ function Dashboard() {
                     handleSelectAll={handleSelectAll}
                     handleEdit={handleEdit}
                     handleDelete={handleDelete}
+                    handleDeleteSingle={handleDeleteSingle}
                     refreshPeserta={refreshPeserta}
+                    setNotif={setNotif}
                   />
                 </div>
               </div>
@@ -323,9 +367,12 @@ function Dashboard() {
       {/* Modal Hapus Peserta */}
       <HapusPeserta
         show={showDelete}
-        onClose={() => setShowDelete(false)}
+        onClose={() => {
+          setShowDelete(false);
+          setSelectedSingleDelete(null);
+        }}
         onDelete={handleDeletePeserta}
-        selected={selected}
+        selected={selectedSingleDelete ? [selectedSingleDelete] : selected}
         peserta={peserta}
       />
 
