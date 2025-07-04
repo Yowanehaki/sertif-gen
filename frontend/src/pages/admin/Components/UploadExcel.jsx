@@ -7,6 +7,7 @@ export default function UploadExcel({ onAktivitasBaru }) {
   const [previewData, setPreviewData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [showToast, setShowToast] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -39,6 +40,8 @@ export default function UploadExcel({ onAktivitasBaru }) {
           if (data.data.aktivitasBaru && data.data.aktivitasBaru.length > 0 && onAktivitasBaru) {
             onAktivitasBaru(data.data.aktivitasBaru);
           }
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
         } else {
           alert(data.message || 'Gagal upload');
         }
@@ -91,7 +94,7 @@ export default function UploadExcel({ onAktivitasBaru }) {
             </div>
           </div>
 
-          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl" onClick={handleConfirmUpload}>
             Upload Data
           </button>
         </div>
@@ -127,6 +130,13 @@ export default function UploadExcel({ onAktivitasBaru }) {
               <button onClick={handleConfirmUpload} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Lanjutkan</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast notifikasi upload berhasil */}
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-fade-in">
+          Excel berhasil diupload
         </div>
       )}
     </div>

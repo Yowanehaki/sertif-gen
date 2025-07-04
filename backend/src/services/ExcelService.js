@@ -99,6 +99,7 @@ class ExcelService {
         const tahun = now.getFullYear();
         // Ambil kode aktivitas dari tabel Aktivitas
         const aktivitasObj = await prisma.aktivitas.findUnique({ where: { nama: p.aktivitas } });
+        // Jika aktivitas belum ada di database, gunakan string kosong sebagai placeholder
         const kodeAktivitas = aktivitasObj ? aktivitasObj.kode : '';
         // Hitung nomor urut untuk kombinasi aktivitas, batch, tahun
         const count = await prisma.kodePerusahaan.count({

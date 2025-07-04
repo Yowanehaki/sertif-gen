@@ -23,4 +23,9 @@ export const deleteAktivitas = async (id) => {
 export const tambahAktivitas = async (nama, kode) => {
   const { data } = await api.post('/aktivitas', { nama, kode });
   return data;
+};
+
+export const updateKodePerusahaan = async (aktivitasList) => {
+  const { data } = await api.post('/aktivitas/update-kode-perusahaan', { aktivitasList });
+  return data;
 }; 

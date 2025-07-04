@@ -11,7 +11,7 @@ import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
-import { getAktivitas, tambahAktivitas } from '../../services/dashboard/aktivitas.service';
+import { getAktivitas, updateKodePerusahaan } from '../../services/dashboard/aktivitas.service.js';
 import { getBatchList, deleteBatch } from '../../services/dashboard/batch.service';
 
 function Dashboard() {
@@ -163,14 +163,19 @@ function Dashboard() {
 
   const handleTambahAktivitas = async (data) => {
     // data: [{ nama, kode }]
-    for (const item of data) {
-      await tambahAktivitas(item.nama, item.kode);
+    try {
+      await updateKodePerusahaan(data);
+      setShowTambahAktivitas(false);
+      setAktivitasBaru([]);
+      await refreshAktivitas();
+      await refreshPeserta(); // Refresh peserta untuk menampilkan kode yang sudah diupdate
+      setNotif('Aktivitas berhasil ditambahkan dan kode perusahaan diupdate');
+      setTimeout(() => setNotif(''), 2000);
+    } catch (error) {
+      console.error('Error adding activities:', error);
+      setNotif('Gagal menambahkan aktivitas: ' + error.message);
+      setTimeout(() => setNotif(''), 3000);
     }
-    setShowTambahAktivitas(false);
-    setAktivitasBaru([]);
-    await refreshAktivitas();
-    setNotif('Aktivitas berhasil ditambahkan');
-    setTimeout(() => setNotif(''), 2000);
   };
 
   const sidebarItems = [

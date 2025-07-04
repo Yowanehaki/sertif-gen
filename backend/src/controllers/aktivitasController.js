@@ -10,13 +10,49 @@ exports.create = async (req, res) => {
   // Cek duplikat
   const exists = await prisma.aktivitas.findFirst({ where: { nama } });
   if (exists) return res.status(400).json({ error: 'Aktivitas sudah ada' });
+  
+  // Buat aktivitas baru
   await prisma.aktivitas.create({ data: { nama, kode, aktif: false } });
+  
+  // Update kode perusahaan untuk peserta yang sudah ada dengan aktivitas ini tapi belum punya kode
+  await prisma.kodePerusahaan.updateMany({
+    where: {
+      kode: '', // Kode kosong
+      peserta: {
+        aktivitas: nama
+      }
+    },
+    data: {
+      kode: kode
+    }
+  });
+  
   res.json({ success: true });
 };
 
 exports.update = async (req, res) => {
   const { id, nama, kode, aktif } = req.body;
+  
+  // Ambil aktivitas lama untuk update kode perusahaan
+  const aktivitasLama = await prisma.aktivitas.findUnique({ where: { id } });
+  
   await prisma.aktivitas.update({ where: { id }, data: { nama, kode, ...(typeof aktif === 'boolean' ? { aktif } : {}) } });
+  
+  // Update kode perusahaan jika kode berubah
+  if (aktivitasLama && aktivitasLama.kode !== kode) {
+    await prisma.kodePerusahaan.updateMany({
+      where: {
+        kode: aktivitasLama.kode,
+        peserta: {
+          aktivitas: nama
+        }
+      },
+      data: {
+        kode: kode
+      }
+    });
+  }
+  
   res.json({ success: true });
 };
 
@@ -24,4 +60,38 @@ exports.delete = async (req, res) => {
   const { id } = req.body;
   await prisma.aktivitas.delete({ where: { id } });
   res.json({ success: true });
+};
+
+// Endpoint untuk mengupdate kode perusahaan secara bulk
+exports.updateKodePerusahaan = async (req, res) => {
+  try {
+    const { aktivitasList } = req.body; // Array of { nama, kode }
+    
+    for (const aktivitas of aktivitasList) {
+      // Update aktivitas di database
+      await prisma.aktivitas.upsert({
+        where: { nama: aktivitas.nama },
+        update: { kode: aktivitas.kode },
+        create: { nama: aktivitas.nama, kode: aktivitas.kode, aktif: false }
+      });
+      
+      // Update kode perusahaan untuk peserta yang sudah ada
+      await prisma.kodePerusahaan.updateMany({
+        where: {
+          kode: '', // Kode kosong
+          peserta: {
+            aktivitas: aktivitas.nama
+          }
+        },
+        data: {
+          kode: aktivitas.kode
+        }
+      });
+    }
+    
+    res.json({ success: true, message: 'Kode perusahaan berhasil diupdate' });
+  } catch (error) {
+    console.error('Error updating kode perusahaan:', error);
+    res.status(500).json({ error: 'Gagal mengupdate kode perusahaan', message: error.message });
+  }
 }; 
