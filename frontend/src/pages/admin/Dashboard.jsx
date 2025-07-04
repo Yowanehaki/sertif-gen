@@ -304,7 +304,7 @@ function Dashboard() {
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'upload', label: 'Upload Excel', icon: Upload },
-    { id: 'aktivitas', label: 'Kelola Aktivitas', icon: Settings },
+    { id: 'aktivitas', label: 'Edit Form', icon: Settings },
   ];
 
   return (
@@ -374,7 +374,7 @@ function Dashboard() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-1">Dashboard</h2>
-                    <p className="text-gray-600">Kelola data peserta dan generate sertifikat dengan mudah</p>
+                    <p className="text-gray-600">Kelola data peserta dan generate sertifikat</p>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <button

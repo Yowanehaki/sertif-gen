@@ -91,7 +91,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
         )}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Form</h2>
@@ -101,7 +101,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
             {/* Filter/Search */}
             <input
               type="text"
-              className="w-full mb-2 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full mb-2 px-4 py-2 border-2 border-gray-500 rounded-xl  focus:border-transparent transition-all duration-200"
               placeholder="Cari aktivitas..."
               value={searchAktivitas}
               onChange={e => setSearchAktivitas(e.target.value)}
@@ -155,7 +155,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
                 <Plus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border-1 border-gray-700 rounded-xl focus:border-transparent transition-all duration-200"
                   placeholder="Nama aktivitas baru..."
                   value={editAktivitas}
                   onChange={e => setEditAktivitas(e.target.value)}
@@ -163,14 +163,14 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
               </div>
               <input
                 type="text"
-                className="w-25 px-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="w-25 px-3 py-3 border-1 border-gray-700 rounded-xl focus:border-transparent transition-all duration-200"
                 placeholder="Kode"
                 value={newKode}
                 onChange={e => setNewKode(e.target.value)}
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-red-600 hover:to-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Tambah
               </button>

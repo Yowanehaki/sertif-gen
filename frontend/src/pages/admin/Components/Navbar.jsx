@@ -72,7 +72,7 @@ export default function NavigationMenu({ currentTab, onTabChange }) {
             <div className="w-25 h-8 rounded-lg flex items-center justify-center">
               <img src={logo} alt="Logo" className="w-25 h-25 object-contain" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-900 to-red-600 bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-red-600 bg-clip-text text-transparent">
               Genarate Sertificate
             </h1>
           </div>
