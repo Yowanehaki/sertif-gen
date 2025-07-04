@@ -72,7 +72,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id_sertif } = req.params;
-  const { nama, aktivitas, konfirmasi_hadir, batch } = req.body;
+  const { nama, aktivitas, konfirmasi_hadir, batch, nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
   try {
     // Update peserta
     const peserta = await prisma.peserta.update({
@@ -80,7 +80,11 @@ exports.update = async (req, res) => {
       data: {
         nama,
         aktivitas,
-        ...(typeof konfirmasi_hadir !== 'undefined' ? { konfirmasi_hadir: Boolean(konfirmasi_hadir) } : {})
+        ...(typeof konfirmasi_hadir !== 'undefined' ? { konfirmasi_hadir: Boolean(konfirmasi_hadir) } : {}),
+        ...(typeof nama_penguji !== 'undefined' ? { nama_penguji } : {}),
+        ...(typeof jabatan_penguji !== 'undefined' ? { jabatan_penguji } : {}),
+        ...(typeof tgl_terbit_sertif !== 'undefined' ? { tgl_terbit_sertif: tgl_terbit_sertif ? new Date(tgl_terbit_sertif) : null } : {}),
+        ...(typeof tandatangan !== 'undefined' ? { tandatangan } : {}),
       }
     });
     // Update batch & no_urut jika batch atau aktivitas diubah

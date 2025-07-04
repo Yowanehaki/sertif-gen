@@ -27,7 +27,7 @@ app.use('/api/excel', excelRoutes);
 app.use('/generated-certificates', express.static(path.join(__dirname, 'generated-certificates')));
 app.use('/uploads/signatures', express.static(path.join(__dirname, 'uploads/signatures')));
 
-app.get('/', (req, res) => res.send('Sertif-Gen API Ready!'));
+app.get('/', (req, res) => res.send('Backend Sertif Ready Gan!'));
 
 (async () => {
   const PORT = process.env.PORT || 5000;

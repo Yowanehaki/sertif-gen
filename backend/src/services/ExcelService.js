@@ -4,15 +4,6 @@ const prisma = new PrismaClient();
 const { customAlphabet } = require('nanoid');
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
 
-// Mapping aktivitas ke kodeAktivitas
-const aktivitasMap = {
-  'Try Out CPNS 2025': 'TO-CoA',
-  'Seminar Digital Marketing': 'SDM',
-  'Seminar Kewirausahaan': 'SKW',
-  'Try Out UTBK 2025': 'TO-UTBK',
-  'Webinar Teknologi AI': 'WTAI',
-  'Workshop Design Thinking': 'WDT',
-};
 
 class ExcelService {
   static parseExcelFile(filePath) {

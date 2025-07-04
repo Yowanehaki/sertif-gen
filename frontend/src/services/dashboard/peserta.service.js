@@ -33,4 +33,13 @@ export const bulkDeletePeserta = async (ids) => {
 export const generateSertifikat = async (id_sertif, payload) => {
   const { data } = await api.put(`/dashboard/${id_sertif}/generate`, payload);
   return data;
+};
+
+export const uploadTandaTanganPeserta = async (id_sertif, file) => {
+  const formData = new FormData();
+  formData.append('tandatangan', file);
+  const { data } = await api.post(`/dashboard/${id_sertif}/upload-tandatangan`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
 }; 

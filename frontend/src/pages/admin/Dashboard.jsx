@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown } from 'lucide-react';
 import NavigationMenu from './Components/Navbar.jsx';
 import Sidebar from './Components/Sidebar.jsx';
@@ -10,7 +10,7 @@ import HapusPeserta from './Components/HapusPeserta.jsx';
 import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
-import { getPeserta, updatePeserta, bulkDeletePeserta } from '../../services/dashboard/peserta.service';
+import { getPeserta, updatePeserta, bulkDeletePeserta, uploadTandaTanganPeserta } from '../../services/dashboard/peserta.service';
 import { getAktivitas, updateKodePerusahaan } from '../../services/dashboard/aktivitas.service.js';
 import { getBatchList, deleteBatch } from '../../services/dashboard/batch.service';
 
@@ -18,7 +18,7 @@ function Dashboard() {
   const [tab, setTab] = useState('dashboard');
   const [peserta, setPeserta] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '' });
+  const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '', no_urut: '' });
   const [showDelete, setShowDelete] = useState(false);
   const [selectedSingleDelete, setSelectedSingleDelete] = useState(null);
   const [aktivitas, setAktivitas] = useState([]);
@@ -40,6 +40,8 @@ function Dashboard() {
   const [currentDeleteBatchId, setCurrentDeleteBatchId] = useState(null);
   const [aktivitasBaru, setAktivitasBaru] = useState([]);
   const [showTambahAktivitas, setShowTambahAktivitas] = useState(false);
+  const [downloadLinks, setDownloadLinks] = useState(null);
+  const downloadRef = useRef(null);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -85,6 +87,9 @@ function Dashboard() {
     (filter.batch ? (p.kodePerusahaan && p.kodePerusahaan.batch === filter.batch) : true) &&
     (filter.tgl
       ? formatDateDMY(p.tgl_submit || p.tgl) === formatDateDMY(filter.tgl)
+      : true) &&
+    (filter.no_urut && filter.no_urut !== ''
+      ? (p.kodePerusahaan && String(p.kodePerusahaan.no_urut).includes(filter.no_urut))
       : true)
   );
 
@@ -178,6 +183,124 @@ function Dashboard() {
     }
   };
 
+  // Fungsi generate single
+  const handleGenerateSingle = async () => {
+    setIsGenerating(true);
+    try {
+      let ttdPath = null;
+      if (generateData.tandaTangan) {
+        const uploadRes = await uploadTandaTanganPeserta(selected[0], generateData.tandaTangan);
+        ttdPath = uploadRes.path;
+      }
+      await updatePeserta(selected[0], {
+        nama_penguji: generateData.namaPenguji,
+        jabatan_penguji: generateData.jabatanPenguji,
+        tgl_terbit_sertif: generateData.tanggalTerbit,
+        ...(ttdPath ? { tandatangan: ttdPath } : {})
+      });
+      // Generate PDF
+      const pdfRes = await fetch(`http://localhost:5000/dashboard/${selected[0]}/generate`, { method: 'POST' });
+      if (!pdfRes.ok) throw new Error('Gagal generate PDF');
+      const pdfBlob = await pdfRes.blob();
+      const pdfUrl = window.URL.createObjectURL(pdfBlob);
+      // Generate PNG
+      const pngRes = await fetch(`http://localhost:5000/dashboard/${selected[0]}/generate-png`, { method: 'POST' });
+      if (!pngRes.ok) throw new Error('Gagal generate PNG');
+      const pngBlob = await pngRes.blob();
+      const pngUrl = window.URL.createObjectURL(pngBlob);
+      setDownloadLinks({
+        pdf: pdfUrl,
+        png: pngUrl,
+      });
+      setNotif('Sertifikat berhasil digenerate!');
+    } catch (err) {
+      setNotif('Gagal generate sertifikat: ' + err.message);
+    }
+    setIsGenerating(false);
+    setShowGenerate(false);
+  };
+
+  // Tambahkan fungsi handleGenerateBulkWithUpdate
+  const handleGenerateBulkWithUpdate = async () => {
+    setIsGenerating(true);
+    try {
+      // Upload tanda tangan jika ada
+      let ttdPath = null;
+      if (generateData.tandaTangan) {
+        // Upload sekali, lalu gunakan path yang sama untuk semua peserta
+        const uploadRes = await uploadTandaTanganPeserta(selected[0], generateData.tandaTangan);
+        ttdPath = uploadRes.path;
+      }
+      // Update semua peserta terpilih
+      await Promise.all(selected.map(id => updatePeserta(id, {
+        nama_penguji: generateData.namaPenguji,
+        jabatan_penguji: generateData.jabatanPenguji,
+        tgl_terbit_sertif: generateData.tanggalTerbit,
+        ...(ttdPath ? { tandatangan: ttdPath } : {})
+      })));
+      // Generate ZIP
+      const res = await fetch('http://localhost:5000/dashboard/bulk-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected })
+      });
+      if (!res.ok) throw new Error('Gagal generate ZIP');
+      const zipBlob = await res.blob();
+      const zipUrl = window.URL.createObjectURL(zipBlob);
+      setDownloadLinks({ zip: zipUrl });
+      setNotif('ZIP sertifikat berhasil digenerate!');
+      setTimeout(() => setNotif(''), 3000);
+    } catch (err) {
+      setNotif('Gagal generate ZIP: ' + err.message);
+      setTimeout(() => setNotif(''), 3000);
+    }
+    setIsGenerating(false);
+    setShowGenerate(false);
+  };
+
+  // Render tombol download di atas Filter
+  const renderDownloadButtons = () => {
+    if (!downloadLinks) return null;
+    return (
+      <div className="mb-4 flex gap-3">
+        {downloadLinks.pdf && (
+          <a
+            href={downloadLinks.pdf}
+            download={`sertifikat-${selected[0]}.pdf`}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow"
+            ref={downloadRef}
+          >
+            Download PDF
+          </a>
+        )}
+        {downloadLinks.png && (
+          <a
+            href={downloadLinks.png}
+            download={`sertifikat-${selected[0]}.png`}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow"
+          >
+            Download PNG
+          </a>
+        )}
+        {downloadLinks.zip && (
+          <a
+            href={downloadLinks.zip}
+            download={`sertifikat-bulk.zip`}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium shadow"
+          >
+            Download ZIP (PDF & PNG)
+          </a>
+        )}
+        <button
+          className="ml-2 text-gray-500 hover:text-gray-700 text-xs"
+          onClick={() => setDownloadLinks(null)}
+        >
+          Tutup
+        </button>
+      </div>
+    );
+  };
+
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'upload', label: 'Upload Excel', icon: Upload },
@@ -237,10 +360,13 @@ function Dashboard() {
           aktivitas={aktivitas}
           sidebarItems={sidebarItems}
           aktivitasBaru={aktivitasBaru}
+          batchList={batchList}
         />
 
         {/* Main Content */}
         <main className="flex-1 p-6 md:ml-72">
+          {/* Download Buttons */}
+          {renderDownloadButtons()}
           {/* Dashboard Tab */}
           {tab === 'dashboard' && (
             <div className="space-y-6">
@@ -259,7 +385,7 @@ function Dashboard() {
                           ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
                           : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white')
                       }
-                      disabled={selected.length === 0}
+                      disabled={selected.length === 0 || isGenerating}
                     >
                       <FileText className="w-4 h-4" />
                       <span>Generate Sertifikat</span>
@@ -350,10 +476,11 @@ function Dashboard() {
               </div>
               <form onSubmit={async e => {
                 e.preventDefault();
-                setIsGenerating(true);
-                // ... logic generate ...
-                setIsGenerating(false);
-                setShowGenerate(false);
+                if (selected.length === 1) {
+                  await handleGenerateSingle();
+                } else {
+                  await handleGenerateBulkWithUpdate();
+                }
               }} className="space-y-4">
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Nama Penguji</label>
@@ -369,9 +496,35 @@ function Dashboard() {
                 </div>
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
-                  <input type="file" accept="image/*" className="w-full" onChange={e => setGenerateData({...generateData, tandaTangan: e.target.files[0]})} disabled={isGenerating} />
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      onChange={e => setGenerateData({ ...generateData, tandaTangan: e.target.files[0] })}
+                      disabled={isGenerating}
+                    />
+                    {generateData.tandaTangan && (
+                      <button
+                        type="button"
+                        className="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 border border-red-200 rounded"
+                        onClick={() => setGenerateData({ ...generateData, tandaTangan: null })}
+                        disabled={isGenerating}
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
                   {generateData.tandaTangan && (
-                    <div className="mt-2 text-xs text-gray-600">File: {generateData.tandaTangan.name}</div>
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="text-xs text-gray-600">File: {generateData.tandaTangan.name}</span>
+                      <img
+                        src={URL.createObjectURL(generateData.tandaTangan)}
+                        alt="Preview Tanda Tangan"
+                        className="h-12 border rounded shadow"
+                        style={{ maxWidth: 120, objectFit: 'contain' }}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="flex space-x-3 pt-2">

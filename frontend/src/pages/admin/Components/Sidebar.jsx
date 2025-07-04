@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [] }) {
+function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [], batchList = [] }) {
   return (
     <aside className="w-72 min-h-screen h-full bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 hidden md:block fixed left-0 top-0 md:top-20 z-30">
       <div className="space-y-3">
@@ -32,10 +32,8 @@ function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru 
             <span className="font-semibold text-blue-600">{peserta.length}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Hadir</span>
-            <span className="font-semibold text-green-600">
-              {peserta.filter(p => p.status === 'Hadir').length}
-            </span>
+            <span className="text-gray-600">Jumlah Batch</span>
+            <span className="font-semibold text-pink-600">{batchList.length}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Aktivitas</span>
