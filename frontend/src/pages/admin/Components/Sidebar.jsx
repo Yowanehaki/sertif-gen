@@ -12,7 +12,7 @@ function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru 
               onClick={() => setTab(item.id)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
                 tab === item.id
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-red-600 to-blue-600 text-white shadow-lg'
                   : 'text-gray-700 hover:bg-white/80 hover:shadow-md'
               }`}
             >
