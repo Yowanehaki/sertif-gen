@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Users, Home, Upload, Settings, X, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo.png'
 import { getFormUserStatus, setFormUserStatus } from '../../../services/dashboard/api';
+import { LogoutHandler } from "../../../services/adminAuth/adminLogout.service";
 
 export default function NavigationMenu({ currentTab, onTabChange }) {
   const [scrolled, setScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
-  const navigate = useNavigate();
   const [formUserAktif, setFormUserAktif] = useState(true);
   const [loadingFormUser, setLoadingFormUser] = useState(false);
   const [notif, setNotif] = useState('');
@@ -173,7 +172,7 @@ export default function NavigationMenu({ currentTab, onTabChange }) {
                 </p>
               </div>
               <div className="flex space-x-3">
-                <button onClick={() => { setShowLogout(false); navigate('/login'); }} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Logout</button>
+                <button onClick={() => { setShowLogout(false); LogoutHandler(); }} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Logout</button>
                 <button onClick={() => setShowLogout(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
               </div>
             </div>

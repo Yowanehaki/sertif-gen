@@ -4,16 +4,6 @@ const { nanoid, customAlphabet } = require('nanoid');
 const prisma = require('../config/prisma');
 const settingsController = require('../controllers/settingsController');
 
-const kodePerusahaan = 'GRH';
-const aktivitasMap = {
-  'Try Out CPNS 2025': 'TO-CoA',
-  'Seminar Digital Marketing': 'SDM',
-  'Seminar Kewirausahaan': 'SKW',
-  'Try Out UTBK 2025': 'TO-UTBK',
-  'Webinar Teknologi AI': 'WTAI',
-  'Workshop Design Thinking': 'WDT',
-};
-
 function generateIdWithDigits(minDigits = 2, length = 12) {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
   const nanoidCustom = customAlphabet(alphabet, length);

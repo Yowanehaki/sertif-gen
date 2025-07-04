@@ -22,7 +22,16 @@ const storage = multer.diskStorage({
     cb(null, `ttd_${Date.now()}${ext}`);
   }
 });
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'image/png') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PNG files are allowed for signature!'), false);
+    }
+  }
+});
 
 //protect
 

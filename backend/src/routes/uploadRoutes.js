@@ -31,15 +31,6 @@ router.post('/excel', async (req, res) => {
       const sheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(sheet);
 
-      // Mapping aktivitas ke kodeAktivitas
-      const aktivitasMap = {
-        'Try Out CPNS 2025': 'TO-CoA',
-        'Seminar Digital Marketing': 'SDM',
-        'Seminar Kewirausahaan': 'SKW',
-        'Try Out UTBK 2025': 'TO-UTBK',
-        'Webinar Teknologi AI': 'WTAI',
-        'Workshop Design Thinking': 'WDT',
-      };
       const kodePerusahaan = 'GRH';
       const tahun = new Date().getFullYear();
 
