@@ -225,6 +225,7 @@ function Dashboard() {
         png: pngUrl,
       });
       setNotif('Sertifikat berhasil digenerate!');
+      setTimeout(() => setNotif(''), 2500);
     } catch (err) {
       setNotif('Gagal generate sertifikat: ' + err.message);
     }
