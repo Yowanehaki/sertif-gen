@@ -34,6 +34,60 @@ const upload = multer({
   }
 });
 
+// Endpoint submit form peserta (PUBLIC, tidak perlu token)
+router.post('/submit', async (req, res) => {
+  const { nama, aktivitas, batch } = req.body;
+  if (!nama || !aktivitas || !batch) {
+    return res.status(400).json({ message: 'Semua field wajib diisi' });
+  }
+  try {
+    // Ambil kode aktivitas dari tabel Aktivitas
+    const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas } });
+    const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
+    const now = new Date();
+    const tahun = now.getFullYear().toString();
+
+    // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
+    const count = await prisma.kodePerusahaan.count({
+      where: {
+        kode,
+        batch,
+        peserta: {
+          tgl_submit: {
+            gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+            lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+          }
+        }
+      }
+    });
+    const no_urut = count + 1;
+    const id_sertif = generateIdWithDigits(2, 8);
+
+    // 1. Create Peserta
+    const peserta = await prisma.peserta.create({
+      data: {
+        id_sertif,
+        nama,
+        aktivitas,
+        tgl_submit: now,
+        konfirmasi_hadir: true
+      }
+    });
+
+    // 2. Create KodePerusahaan
+    const kodePerusahaan = await prisma.kodePerusahaan.create({
+      data: { id_sertif, kode, batch, no_urut }
+    });
+
+    // 3. Generate kode perusahaan utuh
+    const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
+
+    res.status(201).json({ message: 'Data berhasil disimpan', peserta, kodePerusahaan, kode_perusahaan_utuh });
+  } catch (err) {
+    res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
+  }
+});
+
 // Protect semua route dashboard - hanya admin yang bisa akses
 router.use(accessValidation);
 
@@ -186,60 +240,6 @@ const aktivitasMap = {
   'Webinar Teknologi AI': 'WTAI',
   'Workshop Design Thinking': 'WDT',
 };
-
-// Endpoint submit form peserta
-router.post('/submit', async (req, res) => {
-  const { nama, aktivitas, batch } = req.body;
-  if (!nama || !aktivitas || !batch) {
-    return res.status(400).json({ message: 'Semua field wajib diisi' });
-  }
-  try {
-    // Ambil kode aktivitas dari tabel Aktivitas
-    const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas } });
-    const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
-    const now = new Date();
-    const tahun = now.getFullYear().toString();
-
-    // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
-    const count = await prisma.kodePerusahaan.count({
-      where: {
-        kode,
-        batch,
-        peserta: {
-          tgl_submit: {
-            gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-            lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
-          }
-        }
-      }
-    });
-    const no_urut = count + 1;
-    const id_sertif = generateIdWithDigits(2, 8);
-
-    // 1. Create Peserta
-    const peserta = await prisma.peserta.create({
-      data: {
-        id_sertif,
-        nama,
-        aktivitas,
-        tgl_submit: now,
-        konfirmasi_hadir: true
-      }
-    });
-
-    // 2. Create KodePerusahaan
-    const kodePerusahaan = await prisma.kodePerusahaan.create({
-      data: { id_sertif, kode, batch, no_urut }
-    });
-
-    // 3. Generate kode perusahaan utuh
-    const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
-
-    res.status(201).json({ message: 'Data berhasil disimpan', peserta, kodePerusahaan, kode_perusahaan_utuh });
-  } catch (err) {
-    res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
-  }
-});
 
 // Endpoint upload tanda tangan peserta
 router.post('/:id_sertif/upload-tandatangan', upload.single('tandatangan'), async (req, res) => {

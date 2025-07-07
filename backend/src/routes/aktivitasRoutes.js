@@ -13,4 +13,3 @@ router.delete('/', ctrl.delete);
 router.post('/update-kode-perusahaan', ctrl.updateKodePerusahaan);
 
 module.exports = router; 
-//protect

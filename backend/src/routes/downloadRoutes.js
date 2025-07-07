@@ -12,5 +12,3 @@ router.get('/certificate/:filename', (req, res) => {
 });
 
 module.exports = router; 
-
-//protect

@@ -6,6 +6,7 @@ const accessValidation = require('../middleware/admin/validationAccess');
 router.post('/login', ctrl.login);
 router.get('/validate', ctrl.validate);
 
+
 // Route untuk manage admin - PROTECTED (admin only)
 router.post('/register', accessValidation, ctrl.register);
 router.get('/all', accessValidation, ctrl.getAllAdmins);

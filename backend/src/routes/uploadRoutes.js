@@ -70,4 +70,3 @@ function generateIdWithDigits(minDigits = 2, length = 12) {
 }
 
 module.exports = router; 
-//protect
