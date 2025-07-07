@@ -9,6 +9,7 @@ const path = require('path');
 const { customAlphabet } = require('nanoid');
 const multer = require('multer');
 const archiver = require('archiver');
+const accessValidation = require('../middleware/admin/validationAccess');
 
 // Multer setup untuk upload tanda tangan
 const storage = multer.diskStorage({
@@ -33,7 +34,8 @@ const upload = multer({
   }
 });
 
-//protect
+// Protect semua route dashboard - hanya admin yang bisa akses
+router.use(accessValidation);
 
 router.get('/', ctrl.getAll);
 router.get('/:id_sertif', ctrl.getById);

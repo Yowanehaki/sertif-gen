@@ -3,6 +3,7 @@ const router = express.Router();
 const { nanoid, customAlphabet } = require('nanoid');
 const prisma = require('../config/prisma');
 const settingsController = require('../controllers/settingsController');
+const accessValidation = require('../middleware/admin/validationAccess');
 
 function generateIdWithDigits(minDigits = 2, length = 12) {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -52,9 +53,9 @@ router.post('/peserta', async (req, res) => {
   }
 });
 
-// Endpoint untuk status FormUser
-router.get('/settings/form-user', settingsController.getFormUserStatus);
-router.post('/settings/form-user', settingsController.setFormUserStatus);
+// Endpoint untuk status FormUser - PROTECTED (admin only)
+router.get('/settings/form-user', accessValidation, settingsController.getFormUserStatus);
+router.post('/settings/form-user', accessValidation, settingsController.setFormUserStatus);
 
 module.exports = router; 
 

@@ -6,6 +6,7 @@ const prisma = require('../config/prisma');
 const router = express.Router();
 const XLSX = require('xlsx');
 const fs = require('fs');
+const accessValidation = require('../middleware/admin/validationAccess');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads/signatures')),
@@ -13,12 +14,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Public route - untuk upload signature (user bisa akses)
 router.post('/signature', upload.single('signature'), (req, res) => {
   res.json({ path: req.file.path });
 });
 
-// Contoh handler upload Excel (sesuaikan dengan handler Anda)
-router.post('/excel', async (req, res) => {
+// Protected route - untuk upload Excel (admin only)
+router.post('/excel', accessValidation, async (req, res) => {
   try {
     // Ambil file buffer dari request
     const chunks = [];
