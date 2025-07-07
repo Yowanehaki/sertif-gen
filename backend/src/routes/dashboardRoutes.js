@@ -265,4 +265,26 @@ function generateIdWithDigits(minDigits = 2, length = 8) {
   return id;
 }
 
+// Auto cleanup: hapus file tanda tangan di uploads/tandatangan yang lebih dari 1 menit
+setInterval(() => {
+  const dir = path.join(__dirname, '../../uploads/tandatangan');
+  if (fs.existsSync(dir)) {
+    const files = fs.readdirSync(dir);
+    const now = Date.now();
+    files.forEach(file => {
+      const filePath = path.join(dir, file);
+      try {
+        const stats = fs.statSync(filePath);
+        // Jika file lebih dari 1 menit (60.000 ms)
+        if (now - stats.mtime.getTime() > 60 * 1000) {
+          fs.unlinkSync(filePath);
+          console.log('Auto-cleanup: deleted', filePath);
+        }
+      } catch (e) {
+        console.error('Auto-cleanup error:', e);
+      }
+    });
+  }
+}, 30 * 1000); // Cek setiap 30 detik
+
 module.exports = router; 
