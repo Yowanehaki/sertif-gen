@@ -1,6 +1,7 @@
 const prisma = require('../../config/prisma');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const AdminService = require('../../services/adminService');
 
 exports.login = async (req, res) => {
   // Hanya izinkan POST
@@ -55,5 +56,87 @@ exports.validate = async (req, res) => {
     res.json({ valid: true, user: decoded });
   } catch {
     res.status(401).json({ valid: false });
+  }
+};
+
+exports.register = async (req, res) => {
+  const { username, password } = req.body;
+  
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username dan password wajib diisi' });
+  }
+  
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password minimal 6 karakter' });
+  }
+  
+  try {
+    const result = await AdminService.createAdmin(username, password);
+    
+    if (result.success) {
+      res.status(201).json({ 
+        message: 'Admin berhasil ditambahkan', 
+        admin: result.admin 
+      });
+    } else {
+      res.status(400).json({ message: result.error });
+    }
+  } catch (error) {
+    console.error('Register admin error:', error);
+    res.status(500).json({ message: 'Gagal menambahkan admin' });
+  }
+};
+
+// Tambah endpoint untuk manage admin
+exports.getAllAdmins = async (req, res) => {
+  try {
+    const result = await AdminService.getAllAdmins();
+    
+    if (result.success) {
+      res.json({ admins: result.admins });
+    } else {
+      res.status(500).json({ message: result.error });
+    }
+  } catch (error) {
+    console.error('Get all admins error:', error);
+    res.status(500).json({ message: 'Gagal mengambil data admin' });
+  }
+};
+
+exports.updateAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { username, password } = req.body;
+  
+  try {
+    const result = await AdminService.updateAdmin(parseInt(id), { username, password });
+    
+    if (result.success) {
+      res.json({ 
+        message: 'Admin berhasil diupdate', 
+        admin: result.admin 
+      });
+    } else {
+      res.status(400).json({ message: result.error });
+    }
+  } catch (error) {
+    console.error('Update admin error:', error);
+    res.status(500).json({ message: 'Gagal update admin' });
+  }
+};
+
+exports.deleteAdmin = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const result = await AdminService.deleteAdmin(parseInt(id));
+    
+    if (result.success) {
+      res.json({ message: 'Admin berhasil dihapus' });
+    } else {
+      res.status(400).json({ message: result.error });
+    }
+  } catch (error) {
+    console.error('Delete admin error:', error);
+    res.status(500).json({ message: 'Gagal hapus admin' });
   }
 }; 

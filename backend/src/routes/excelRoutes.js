@@ -2,10 +2,6 @@ const express = require('express');
 const router = express.Router();
 const ExcelController = require('../controllers/excelController');
 const multer = require('multer');
-const accessValidation = require('../middleware/admin/validationAccess');
-
-// Protect semua route excel - hanya admin yang bisa akses
-router.use(accessValidation);
 
 const upload = multer({ 
   dest: 'uploads/',
