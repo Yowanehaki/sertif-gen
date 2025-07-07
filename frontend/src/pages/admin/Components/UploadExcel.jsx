@@ -3,11 +3,10 @@ import { Upload, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useState } from 'react';
 
-export default function UploadExcel({ onAktivitasBaru }) {
+export default function UploadExcel({ onPreviewConfirm }) {
   const [previewData, setPreviewData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [showToast, setShowToast] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -19,39 +18,17 @@ export default function UploadExcel({ onAktivitasBaru }) {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      // Ambil header dan data saja
       setPreviewData(json);
       setShowModal(true);
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const handleConfirmUpload = async () => {
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      try {
-        const res = await fetch('http://localhost:5000/api/excel/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.success) {
-          if (data.data.aktivitasBaru && data.data.aktivitasBaru.length > 0 && onAktivitasBaru) {
-            onAktivitasBaru(data.data.aktivitasBaru);
-          }
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 3000);
-        } else {
-          alert(data.message || 'Gagal upload');
-        }
-      } catch (err) {
-        alert('Gagal upload: ' + err.message);
-      }
-      setShowModal(false);
-      setSelectedFile(null);
-      setPreviewData([]);
+  const handleConfirmPreview = () => {
+    if (onPreviewConfirm) {
+      onPreviewConfirm({ file: selectedFile, preview: previewData });
     }
+    setShowModal(false);
   };
 
   const handleCancel = () => {
@@ -94,7 +71,7 @@ export default function UploadExcel({ onAktivitasBaru }) {
             </div>
           </div>
 
-          <button className="w-full bg-gradient-to-r from-green-500 to-green-500 hover:from-green-600 hover:to-orange-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl" onClick={handleConfirmUpload}>
+          <button className="w-full bg-gradient-to-r from-green-500 to-green-500 hover:from-green-600 hover:to-orange-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl" onClick={handleConfirmPreview}>
             Upload Data
           </button>
         </div>
@@ -127,16 +104,9 @@ export default function UploadExcel({ onAktivitasBaru }) {
             </div>
             <div className="flex gap-2 justify-end">
               <button onClick={handleCancel} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Batal</button>
-              <button onClick={handleConfirmUpload} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Lanjutkan</button>
+              <button onClick={handleConfirmPreview} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Lanjutkan</button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Toast notifikasi upload berhasil */}
-      {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-fade-in">
-          Excel berhasil diupload
         </div>
       )}
     </div>

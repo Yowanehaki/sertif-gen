@@ -42,6 +42,7 @@ function Dashboard() {
   const [showTambahAktivitas, setShowTambahAktivitas] = useState(false);
   const [downloadLinks, setDownloadLinks] = useState(null);
   const downloadRef = useRef(null);
+  const [pendingUpload, setPendingUpload] = useState(null);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -178,21 +179,73 @@ function Dashboard() {
     setTimeout(() => setNotif(''), 2000);
   };
 
+  const handleExcelPreviewConfirm = ({ file, preview }) => {
+    setPendingUpload({ file, preview });
+
+    // Deteksi aktivitas baru dari preview Excel
+    const header = preview[0];
+    const aktivitasIdx = header.findIndex(h => h.toLowerCase().includes('aktivitas'));
+    const aktivitasDiExcel = preview.slice(1).map(row => row[aktivitasIdx]);
+    const aktivitasUnik = [...new Set(aktivitasDiExcel)].filter(Boolean);
+    const aktivitasSudahAda = aktivitas.map(a => a.nama);
+    const aktivitasBaruList = aktivitasUnik.filter(a => !aktivitasSudahAda.includes(a));
+    setAktivitasBaru(aktivitasBaruList);
+
+    if (aktivitasBaruList.length === 0) {
+      handleFinalUpload(file);
+      setPendingUpload(null);
+    } else {
+      setShowTambahAktivitas(true);
+    }
+  };
+
+  const handleFinalUpload = async (file, aktivitasKode) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (aktivitasKode) {
+      formData.append('aktivitasKode', JSON.stringify(aktivitasKode));
+    }
+    try {
+      const res = await fetch('http://localhost:5000/api/excel/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNotif('Excel berhasil diupload');
+        await refreshPeserta();
+      } else {
+        setNotif(data.message || 'Gagal upload');
+      }
+    } catch (err) {
+      setNotif('Gagal upload: ' + err.message);
+    }
+  };
+
   const handleTambahAktivitas = async (data) => {
-    // data: [{ nama, kode }]
     try {
       await updateKodePerusahaan(data);
       setShowTambahAktivitas(false);
       setAktivitasBaru([]);
       await refreshAktivitas();
-      await refreshPeserta(); // Refresh peserta untuk menampilkan kode yang sudah diupdate
+      await refreshPeserta();
       setNotif('Aktivitas berhasil ditambahkan dan kode perusahaan diupdate');
       setTimeout(() => setNotif(''), 2000);
+      if (pendingUpload && pendingUpload.file) {
+        await handleFinalUpload(pendingUpload.file, data);
+        setPendingUpload(null);
+      }
     } catch (error) {
       console.error('Error adding activities:', error);
       setNotif('Gagal menambahkan aktivitas: ' + error.message);
       setTimeout(() => setNotif(''), 3000);
     }
+  };
+
+  const handleCancelTambahAktivitas = () => {
+    setShowTambahAktivitas(false);
+    setAktivitasBaru([]);
+    setPendingUpload(null);
   };
 
   // Fungsi generate single
@@ -443,7 +496,11 @@ function Dashboard() {
           )}
 
           {/* Upload Tab */}
-          {tab === 'upload' && <UploadExcel onAktivitasBaru={setAktivitasBaru} />}
+          {tab === 'upload' && (
+            <UploadExcel
+              onPreviewConfirm={handleExcelPreviewConfirm}
+            />
+          )}
 
           {/* Edit Aktivitas Tab */}
           {tab === 'aktivitas' && (
@@ -608,7 +665,7 @@ function Dashboard() {
       <TambahAktivitasBaruModal
         show={showTambahAktivitas}
         aktivitasBaru={aktivitasBaru}
-        onClose={() => setShowTambahAktivitas(false)}
+        onClose={handleCancelTambahAktivitas}
         onSubmit={handleTambahAktivitas}
       />
     </div>
