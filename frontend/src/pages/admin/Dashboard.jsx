@@ -81,17 +81,29 @@ function Dashboard() {
   }
 
   // Filter peserta
-  const filteredPeserta = peserta.filter(p =>
+  let filteredPeserta = peserta.filter(p =>
     p.nama.toLowerCase().includes(filter.nama.toLowerCase()) &&
     (filter.aktivitas ? p.aktivitas === filter.aktivitas : true) &&
     (filter.batch ? (p.kodePerusahaan && p.kodePerusahaan.batch === filter.batch) : true) &&
     (filter.tgl
       ? formatDateDMY(p.tgl_submit || p.tgl) === formatDateDMY(filter.tgl)
-      : true) &&
-    (filter.no_urut && filter.no_urut !== ''
-      ? (p.kodePerusahaan && String(p.kodePerusahaan.no_urut).includes(filter.no_urut))
       : true)
   );
+
+  // Sort berdasarkan no_urut jika ada
+  if (filter.no_urut && filter.no_urut !== '') {
+    filteredPeserta = [...filteredPeserta].sort((a, b) => {
+      const noUrutA = a.kodePerusahaan?.no_urut || 0;
+      const noUrutB = b.kodePerusahaan?.no_urut || 0;
+      
+      if (filter.no_urut === 'asc') {
+        return noUrutA - noUrutB; // Ascending (terlama)
+      } else if (filter.no_urut === 'desc') {
+        return noUrutB - noUrutA; // Descending (terbaru)
+      }
+      return 0;
+    });
+  }
 
   // Handler functions
   const handleSelect = (id) => {

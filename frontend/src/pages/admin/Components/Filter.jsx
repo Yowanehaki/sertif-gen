@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
-import { Search, Filter as FilterIcon, Calendar, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Filter as FilterIcon, Calendar, ChevronDown, ArrowUpDown } from 'lucide-react';
 
 const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
+  const sortRef = useRef(null);
+  
   // State untuk pencarian dropdown
   const [searchAktivitas, setSearchAktivitas] = useState('');
   const [searchBatch, setSearchBatch] = useState('');
   const [showAktivitasList, setShowAktivitasList] = useState(false);
   const [showBatchList, setShowBatchList] = useState(false);
+  const [showSortList, setShowSortList] = useState(false);
+
+  // Handle click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setShowSortList(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Filter list aktivitas dan batch sesuai input search
   const filteredAktivitas = aktivitas.filter(a => (a.nama || a).toLowerCase().includes(searchAktivitas.toLowerCase()));
   const filteredBatch = batches.filter(b => b.toLowerCase().includes(searchBatch.toLowerCase()));
+
+  // Opsi pengurutan
+  const sortOptions = [
+    { value: '', label: 'Urutan Default' },
+    { value: 'asc', label: 'No.Urut ↑ (Terlama)' },
+    { value: 'desc', label: 'No.Urut ↓ (Terbaru)' }
+  ];
+
+  const getSortLabel = (value) => {
+    const option = sortOptions.find(opt => opt.value === value);
+    return option ? option.label : 'Urutan Default';
+  };
 
   const filterForm = (
     <div className="flex flex-col md:flex-row gap-4">
@@ -25,16 +54,34 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
           onChange={e => setFilter(f => ({ ...f, nama: e.target.value }))}
         />
       </div>
-      {/* Input NoUrut */}
-      <div className="relative w-32">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      {/* Dropdown Pengurutan NoUrut */}
+      <div className="relative w-48" ref={sortRef}>
+        <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input
           type="text"
-          placeholder="NoUrut"
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          value={filter.no_urut || ''}
-          onChange={e => setFilter(f => ({ ...f, no_urut: e.target.value }))}
+          placeholder="Urutkan No.Urut"
+          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-full bg-white"
+          value={getSortLabel(filter.no_urut)}
+          onFocus={() => setShowSortList(true)}
+          readOnly
         />
+        {showSortList && (
+          <div className="absolute left-0 right-0 bg-white border border-t-0 border-gray-200 rounded-b-xl max-h-40 overflow-y-auto z-20 shadow-lg">
+            {sortOptions.map(option => (
+              <div
+                key={option.value}
+                className="px-4 py-2 cursor-pointer hover:bg-blue-100"
+                onClick={() => {
+                  setFilter(f => ({ ...f, no_urut: option.value }));
+                  setShowSortList(false);
+                }}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>
+        )}
+        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
       </div>
       {/* Dropdown Aktivitas Searchable */}
       <div className="relative min-w-48">
