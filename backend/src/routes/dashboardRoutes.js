@@ -88,19 +88,7 @@ router.post('/submit', async (req, res) => {
   }
 });
 
-// Protect semua route dashboard - hanya admin yang bisa akses
-router.use(accessValidation);
-
-router.get('/', ctrl.getAll);
-router.get('/:id_sertif', ctrl.getById);
-router.post('/', ctrl.create);
-router.put('/:id_sertif', ctrl.update);
-router.delete('/:id_sertif', ctrl.delete);
-router.put('/:id_sertif/generate', ctrl.generateSertifikat);
-router.post('/bulk', ctrl.bulkUpload);
-router.post('/bulk-delete', ctrl.bulkDelete);
-
-// Endpoint generate sertifikat (PDF) dan download langsung
+// Endpoint generate sertifikat (PDF) dan download langsung (PUBLIC)
 router.post('/:id_sertif/generate', async (req, res) => {
   const { id_sertif } = req.params;
   try {
@@ -141,7 +129,7 @@ router.post('/:id_sertif/generate', async (req, res) => {
   }
 });
 
-// Endpoint bulk generate sertifikat (PDF & PNG) dan download ZIP
+// Endpoint bulk generate sertifikat (PDF & PNG) dan download ZIP (PUBLIC)
 router.post('/bulk-generate', async (req, res) => {
   const { ids } = req.body; // array of id_sertif
   if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: 'IDs required' });
@@ -192,7 +180,7 @@ router.post('/bulk-generate', async (req, res) => {
   }
 });
 
-// Endpoint generate sertifikat PNG dan download langsung
+// Endpoint generate sertifikat PNG dan download langsung (PUBLIC)
 router.post('/:id_sertif/generate-png', async (req, res) => {
   const { id_sertif } = req.params;
   try {
@@ -230,6 +218,18 @@ router.post('/:id_sertif/generate-png', async (req, res) => {
     res.status(500).json({ message: 'Gagal generate PNG', error: err.message });
   }
 });
+
+// Protect semua route dashboard - hanya admin yang bisa akses
+router.use(accessValidation);
+
+router.get('/', ctrl.getAll);
+router.get('/:id_sertif', ctrl.getById);
+router.post('/', ctrl.create);
+router.put('/:id_sertif', ctrl.update);
+router.delete('/:id_sertif', ctrl.delete);
+router.put('/:id_sertif/generate', ctrl.generateSertifikat);
+router.post('/bulk', ctrl.bulkUpload);
+router.post('/bulk-delete', ctrl.bulkDelete);
 
 const kodePerusahaan = 'GRH';
 const aktivitasMap = {
