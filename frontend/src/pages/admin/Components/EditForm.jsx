@@ -94,7 +94,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Form</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Kelola Aktivitas</h2>
             <p className="text-gray-600">Tambah, edit, atau hapus jenis aktivitas dan kode aktivitas</p>
           </div>
           <div className="space-y-6">
