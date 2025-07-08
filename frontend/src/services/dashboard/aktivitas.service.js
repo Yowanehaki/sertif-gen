@@ -28,4 +28,9 @@ export const tambahAktivitas = async (nama, kode) => {
 export const updateKodePerusahaan = async (aktivitasList) => {
   const { data } = await api.post('/aktivitas/update-kode-perusahaan', { aktivitasList });
   return data;
+};
+
+export const getAktivitasAktif = async () => {
+  const { data } = await api.get('/aktivitas/active');
+  return data;
 }; 

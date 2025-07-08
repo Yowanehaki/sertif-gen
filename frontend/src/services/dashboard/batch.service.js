@@ -19,3 +19,8 @@ export const updateBatch = async (id, aktif) => {
   const res = await api.patch('/batch', { id, aktif });
   return res.data;
 };
+
+export const getBatchAktif = async () => {
+  const { data } = await api.get('/batch/active');
+  return data;
+};

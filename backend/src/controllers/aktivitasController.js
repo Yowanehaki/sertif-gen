@@ -96,3 +96,8 @@ exports.updateKodePerusahaan = async (req, res) => {
     res.status(500).json({ error: 'Gagal mengupdate kode perusahaan', message: error.message });
   }
 }; 
+
+exports.getActive = async (req, res) => {
+  const data = await prisma.aktivitas.findMany({ where: { aktif: true }, orderBy: { nama: 'asc' } });
+  res.json(data);
+}; 

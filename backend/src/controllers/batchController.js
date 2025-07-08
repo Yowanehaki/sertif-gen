@@ -23,4 +23,9 @@ exports.delete = async (req, res) => {
   const { id } = req.body;
   await prisma.batch.delete({ where: { id } });
   res.json({ success: true });
+};
+
+exports.getActive = async (req, res) => {
+  const batchList = await prisma.batch.findMany({ where: { aktif: true }, orderBy: { nama: 'asc' } });
+  res.json(batchList);
 }; 

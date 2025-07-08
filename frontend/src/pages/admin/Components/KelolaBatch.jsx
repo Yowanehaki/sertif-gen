@@ -3,7 +3,7 @@ import { Settings, Trash2, Plus } from 'lucide-react';
 import { createBatch, updateBatch } from '../../../services/dashboard/batch.service.js';
 import { Switch } from '@headlessui/react';
 
-const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList, batchBaru = [] }) => {
+const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList, batchBaru = [], refreshBatchAktif }) => {
   const [newBatch, setNewBatch] = useState('');
   const [searchBatch, setSearchBatch] = useState('');
 
@@ -13,6 +13,7 @@ const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList,
       try {
         await createBatch(newBatch);
         await refreshBatchList();
+        if (refreshBatchAktif) await refreshBatchAktif();
         if (setNotif) {
           setNotif('Batch berhasil ditambahkan');
           setTimeout(() => setNotif(''), 2000);
@@ -60,6 +61,7 @@ const KelolaBatch = ({ setNotif, batchList, onOpenDeleteBatch, refreshBatchList,
                         if (isBaru && checked) return;
                         await updateBatch(b.id, checked);
                         await refreshBatchList();
+                        if (refreshBatchAktif) await refreshBatchAktif();
                       }}
                       className={`${isBaru ? 'bg-gray-300' : (b.aktif ? 'bg-green-500' : 'bg-gray-300')} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
                     >

@@ -11,8 +11,8 @@ import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta, uploadTandaTanganPeserta } from '../../services/dashboard/peserta.service';
-import { getAktivitas, updateKodePerusahaan } from '../../services/dashboard/aktivitas.service.js';
-import { getBatchList, deleteBatch } from '../../services/dashboard/batch.service';
+import { getAktivitas, updateKodePerusahaan, getAktivitasAktif } from '../../services/dashboard/aktivitas.service.js';
+import { getBatchList, deleteBatch, getBatchAktif } from '../../services/dashboard/batch.service';
 
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
@@ -43,12 +43,16 @@ function Dashboard() {
   const [downloadLinks, setDownloadLinks] = useState(null);
   const downloadRef = useRef(null);
   const [pendingUpload, setPendingUpload] = useState(null);
+  const [aktivitasAktif, setAktivitasAktif] = useState([]);
+  const [batchAktif, setBatchAktif] = useState([]);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
     refreshPeserta();
     refreshAktivitas();
     refreshBatchList();
+    refreshAktivitasAktif();
+    refreshBatchAktif();
   }, []);
 
   // Tampilkan modal tambah aktivitas baru setiap kali aktivitasBaru berubah
@@ -69,6 +73,15 @@ function Dashboard() {
   const refreshBatchList = async () => {
     const data = await getBatchList();
     setBatchList(data);
+  };
+
+  const refreshAktivitasAktif = async () => {
+    const data = await getAktivitasAktif();
+    setAktivitasAktif(data);
+  };
+  const refreshBatchAktif = async () => {
+    const data = await getBatchAktif();
+    setBatchAktif(data);
   };
 
   // Helper untuk format tanggal dd/mm/yyyy
@@ -427,6 +440,8 @@ function Dashboard() {
           sidebarItems={sidebarItems}
           aktivitasBaru={aktivitasBaru}
           batchList={batchList}
+          aktivitasAktif={aktivitasAktif}
+          batchAktif={batchAktif}
         />
 
         {/* Main Content */}
@@ -514,6 +529,7 @@ function Dashboard() {
                   setTab={setTab}
                   setNotif={setNotif}
                   aktivitasBaru={aktivitasBaru}
+                  refreshAktivitasAktif={refreshAktivitasAktif}
                 />
               </div>
               <div className="flex-[0.9] h-full flex flex-col">
@@ -522,6 +538,7 @@ function Dashboard() {
                   batchList={batchList}
                   onOpenDeleteBatch={handleOpenDeleteBatch}
                   refreshBatchList={refreshBatchList}
+                  refreshBatchAktif={refreshBatchAktif}
                 />
               </div>
             </div>

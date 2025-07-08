@@ -11,5 +11,6 @@ router.post('/', ctrl.create);
 router.put('/', ctrl.update);
 router.delete('/', ctrl.delete);
 router.post('/update-kode-perusahaan', ctrl.updateKodePerusahaan);
+router.get('/active', ctrl.getActive);
 
 module.exports = router; 

@@ -3,7 +3,7 @@ import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
 import { createAktivitas, getAktivitas, updateAktivitas, deleteAktivitas } from '../../../services/dashboard/aktivitas.service.js';
 import { Switch } from '@headlessui/react';
 
-const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif, aktivitasBaru = [] }) => {
+const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif, aktivitasBaru = [], refreshAktivitasAktif }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentEditIdx, setCurrentEditIdx] = useState(null);
@@ -31,6 +31,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
         await updateAktivitas({ id, nama: editValue, kode: editKode });
         const data = await getAktivitas();
         setAktivitas(data);
+        if (refreshAktivitasAktif) await refreshAktivitasAktif();
       } catch {
         if (setNotif) {
           setNotif('Gagal update aktivitas (mungkin nama/kode sudah ada)');
@@ -46,6 +47,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
       await deleteAktivitas(id);
       const data = await getAktivitas();
       setAktivitas(data);
+      if (refreshAktivitasAktif) await refreshAktivitasAktif();
       setShowDelete(false);
       if (setNotif) {
         setNotif('Aktivitas berhasil dihapus');
@@ -65,6 +67,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
         await createAktivitas({ nama: editAktivitas, kode: newKode });
         const data = await getAktivitas();
         setAktivitas(data);
+        if (refreshAktivitasAktif) await refreshAktivitasAktif();
         setNotif && setNotif('Aktivitas berhasil ditambahkan');
         setTimeout(() => {
           setNotif && setNotif('');
@@ -131,6 +134,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
                             await updateAktivitas({ id: a.id, nama: a.nama, kode: a.kode, aktif: checked });
                             const data = await getAktivitas();
                             setAktivitas(data);
+                            if (refreshAktivitasAktif) await refreshAktivitasAktif();
                           }}
                           className={`${isBaru ? 'bg-gray-300' : (a.aktif ? 'bg-green-500' : 'bg-gray-300')} relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
                         >

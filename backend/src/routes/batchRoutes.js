@@ -10,5 +10,6 @@ router.get('/', batchController.getAll);
 router.post('/', batchController.create);
 router.patch('/', batchController.update);
 router.delete('/', batchController.delete);
+router.get('/active', batchController.getActive);
 
 module.exports = router; 
