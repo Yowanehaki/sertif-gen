@@ -13,6 +13,8 @@ import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx'
 import { getPeserta, updatePeserta, bulkDeletePeserta, uploadTandaTanganPeserta } from '../../services/dashboard/peserta.service';
 import { getAktivitas, updateKodePerusahaan, getAktivitasAktif } from '../../services/dashboard/aktivitas.service.js';
 import { getBatchList, deleteBatch, getBatchAktif } from '../../services/dashboard/batch.service';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Dashboard() {
   const [tab, setTab] = useState('dashboard');
@@ -225,13 +227,13 @@ function Dashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        setNotif('Excel berhasil diupload');
+        toast.success('Excel berhasil diupload', { autoClose: 3000 });
         await refreshPeserta();
       } else {
-        setNotif(data.message || 'Gagal upload');
+        toast.error(data.message || 'Gagal upload', { autoClose: 3000 });
       }
     } catch (err) {
-      setNotif('Gagal upload: ' + err.message);
+      toast.error('Gagal upload: ' + err.message, { autoClose: 3000 });
     }
   };
 
@@ -388,6 +390,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <ToastContainer position="top-center" autoClose={3000} />
       {/* Navbar */}
       <NavigationMenu 
         currentTab={tab}
