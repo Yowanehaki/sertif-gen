@@ -74,60 +74,59 @@ class ExcelService {
         if (!batchTerdaftar.has(p.batch)) {
           batchBaruSet.add(p.batch);
         }
-        // Cek apakah peserta sudah ada (berdasarkan nama, aktivitas, batch di kodePerusahaan)
-        let peserta = await prisma.peserta.findFirst({
-          where: {
-            nama: p.nama,
-            aktivitas: p.aktivitas,
-            kodePerusahaan: {
-              batch: p.batch
-            }
-          },
-          include: { kodePerusahaan: true }
-        });
-        let id_sertif = peserta ? peserta.id_sertif : nanoid();
-        // Ambil tahun dari tanggal submit/upload
-        const tahun = now.getFullYear();
-        // Ambil kode aktivitas dari tabel Aktivitas
-        const aktivitasObj = await prisma.aktivitas.findUnique({ where: { nama: p.aktivitas } });
-        // Jika aktivitas belum ada di database, gunakan string kosong sebagai placeholder
-        const kodeAktivitas = aktivitasObj ? aktivitasObj.kode : '';
-        // Hitung nomor urut untuk kombinasi aktivitas, batch, tahun
-        const count = await prisma.kodePerusahaan.count({
-          where: {
-            batch: p.batch,
-            kode: kodeAktivitas,
-            peserta: {
-              aktivitas: p.aktivitas,
-              tgl_submit: {
-                gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-                lte: new Date(`${tahun}-12-31T23:59:59.999Z`),
+        // Atomic insert peserta + kode perusahaan
+        try {
+          const peserta = await prisma.$transaction(async (tx) => {
+            // Ambil tahun dari tanggal submit/upload
+            const tahun = now.getFullYear();
+            // Ambil kode aktivitas dari tabel Aktivitas
+            const aktivitasObj = await tx.aktivitas.findUnique({ where: { nama: p.aktivitas } });
+            const kodeAktivitas = aktivitasObj ? aktivitasObj.kode : '';
+            // Hitung nomor urut untuk kombinasi aktivitas, batch, tahun
+            const count = await tx.kodePerusahaan.count({
+              where: {
+                batch: p.batch,
+                kode: kodeAktivitas,
+                peserta: {
+                  aktivitas: p.aktivitas,
+                  tgl_submit: {
+                    gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+                    lte: new Date(`${tahun}-12-31T23:59:59.999Z`),
+                  },
+                },
               },
-            },
-          },
-        });
-        const no_urut = count + 1;
-        // Insert jika belum ada
-        if (!peserta) {
-          peserta = await prisma.peserta.create({
-            data: {
-              id_sertif,
-              nama: p.nama,
-              aktivitas: p.aktivitas,
-              tgl_submit: now,
-              konfirmasi_hadir: true,
-              kodePerusahaan: {
-                create: {
-                  kode: kodeAktivitas,
-                  batch: p.batch,
-                  no_urut
+            });
+            const no_urut = count + 1;
+            // Insert peserta dan kode perusahaan
+            const id_sertif = nanoid();
+            const peserta = await tx.peserta.create({
+              data: {
+                id_sertif,
+                nama: p.nama,
+                aktivitas: p.aktivitas,
+                tgl_submit: now,
+                konfirmasi_hadir: true,
+                kodePerusahaan: {
+                  create: {
+                    kode: kodeAktivitas,
+                    batch: p.batch,
+                    no_urut
+                  }
                 }
-              }
-            },
-            include: { kodePerusahaan: true }
+              },
+              include: { kodePerusahaan: true }
+            });
+            return peserta;
           });
+          saved.push(peserta);
+        } catch (error) {
+          if (error.code === 'P2002') {
+            // Duplikat kode perusahaan, skip peserta ini
+            continue;
+          } else {
+            throw error;
+          }
         }
-        saved.push(peserta);
       }
       return {
         peserta: saved,

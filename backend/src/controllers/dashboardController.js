@@ -37,37 +37,42 @@ exports.create = async (req, res) => {
   const { nama, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
   const id_sertif = generateIdWithDigits(2, 8);
   const tahun = new Date(tgl_submit).getFullYear().toString();
-
-  // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
-  const count = await prisma.kodePerusahaan.count({
-    where: {
-      kode,
-      batch,
-      peserta: {
-        tgl_submit: {
-          gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-          lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
+      const count = await tx.kodePerusahaan.count({
+        where: {
+          kode,
+          batch,
+          peserta: {
+            tgl_submit: {
+              gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
+              lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
+            }
+          }
         }
-      }
+      });
+      const no_urut = count + 1;
+      // 1. Create Peserta
+      const peserta = await tx.peserta.create({
+        data: { id_sertif, nama, aktivitas, tgl_submit: new Date(tgl_submit), konfirmasi_hadir }
+      });
+      // 2. Create KodePerusahaan
+      const kodePerusahaan = await tx.kodePerusahaan.create({
+        data: { id_sertif, kode, batch, no_urut }
+      });
+      // 3. Generate kode perusahaan utuh
+      const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
+      return { ...peserta, kodePerusahaan, kode_perusahaan_utuh };
+    });
+    res.json(result);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      // Unique constraint failed
+      return res.status(400).json({ error: 'Kode perusahaan sudah digunakan. Silakan coba lagi.' });
     }
-  });
-  const no_urut = count + 1;
-
-  // 1. Create Peserta
-  const peserta = await prisma.peserta.create({
-    data: { id_sertif, nama, aktivitas, tgl_submit: new Date(tgl_submit), konfirmasi_hadir }
-  });
-
-  // 2. Create KodePerusahaan
-  const kodePerusahaan = await prisma.kodePerusahaan.create({
-    data: { id_sertif, kode, batch, no_urut }
-  });
-
-  // 3. Generate kode perusahaan utuh
-  const kode_perusahaan_utuh = `GRH/${kode}/${tahun}/${batch}/${String(no_urut).padStart(4, '0')}`;
-
-  // 4. Gabungkan hasil jika perlu
-  res.json({ ...peserta, kodePerusahaan, kode_perusahaan_utuh });
+    res.status(500).json({ error: 'Gagal menyimpan data', message: error.message });
+  }
 };
 
 exports.update = async (req, res) => {
