@@ -548,14 +548,24 @@ function Dashboard() {
 
       {/* Modal Generate Sertifikat */}
       {showGenerate && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${isGenerating ? 'cursor-wait' : ''}`}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">Generate Sertifikat</h3>
                 <button
-                  onClick={() => setShowGenerate(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  onClick={() => {
+                    if (!isGenerating) {
+                      setShowGenerate(false);
+                      setGenerateData({
+                        namaPenguji: '',
+                        jabatanPenguji: '',
+                        tanggalTerbit: '',
+                        tandaTangan: null
+                      });
+                    }
+                  }}
+                  className={`p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 ${isGenerating ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                   disabled={isGenerating}
                 >
                   <X className="w-5 h-5 text-gray-500" />
@@ -615,10 +625,28 @@ function Dashboard() {
                   )}
                 </div>
                 <div className="flex space-x-3 pt-2">
-                  <button type="submit" className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105" disabled={isGenerating}>
+                  <button type="submit" className={`flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${isGenerating ? 'cursor-wait opacity-75' : ''}`} disabled={isGenerating}>
                     {isGenerating ? 'Memproses...' : 'Generate'}
                   </button>
-                  <button type="button" onClick={() => setShowGenerate(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200" disabled={isGenerating}>Batal</button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (!isGenerating) {
+                        setShowGenerate(false);
+                        setGenerateData({
+                          namaPenguji: '',
+                          jabatanPenguji: '',
+                          tanggalTerbit: '',
+                          tandaTangan: null
+                        });
+                        setDownloadLinks(null);
+                      }
+                    }} 
+                    className={`flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200 ${isGenerating ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} 
+                    disabled={isGenerating}
+                  >
+                    Batal
+                  </button>
                 </div>
               </form>
             </div>
