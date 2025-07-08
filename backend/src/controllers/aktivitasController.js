@@ -7,13 +7,14 @@ exports.getAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   const { nama, kode } = req.body;
-  // Cek duplikat
-  const exists = await prisma.aktivitas.findFirst({ where: { nama } });
-  if (exists) return res.status(400).json({ error: 'Aktivitas sudah ada' });
-  
+  // Cek duplikat nama
+  const existsNama = await prisma.aktivitas.findFirst({ where: { nama } });
+  if (existsNama) return res.status(400).json({ error: 'Aktivitas sudah ada' });
+  // Cek duplikat kode
+  const existsKode = await prisma.aktivitas.findFirst({ where: { kode } });
+  if (existsKode) return res.status(400).json({ error: 'Kode aktivitas sudah digunakan' });
   // Buat aktivitas baru
   await prisma.aktivitas.create({ data: { nama, kode, aktif: false } });
-  
   // Update kode perusahaan untuk peserta yang sudah ada dengan aktivitas ini tapi belum punya kode
   await prisma.kodePerusahaan.updateMany({
     where: {
@@ -26,18 +27,19 @@ exports.create = async (req, res) => {
       kode: kode
     }
   });
-  
   res.json({ success: true });
 };
 
 exports.update = async (req, res) => {
   const { id, nama, kode, aktif } = req.body;
-  
   // Ambil aktivitas lama untuk update kode perusahaan
   const aktivitasLama = await prisma.aktivitas.findUnique({ where: { id } });
-  
+  // Cek duplikat kode (kecuali untuk aktivitas yang sedang diupdate)
+  if (kode) {
+    const existsKode = await prisma.aktivitas.findFirst({ where: { kode, NOT: { id } } });
+    if (existsKode) return res.status(400).json({ error: 'Kode aktivitas sudah digunakan' });
+  }
   await prisma.aktivitas.update({ where: { id }, data: { nama, kode, ...(typeof aktif === 'boolean' ? { aktif } : {}) } });
-  
   // Update kode perusahaan jika kode berubah
   if (aktivitasLama && aktivitasLama.kode !== kode) {
     await prisma.kodePerusahaan.updateMany({
@@ -52,7 +54,6 @@ exports.update = async (req, res) => {
       }
     });
   }
-  
   res.json({ success: true });
 };
 

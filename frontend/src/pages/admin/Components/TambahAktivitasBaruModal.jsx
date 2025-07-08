@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function TambahAktivitasBaruModal({ show, aktivitasBaru = [], onClose, onSubmit }) {
   const [kodeMap, setKodeMap] = useState({});
@@ -13,14 +15,19 @@ export default function TambahAktivitasBaruModal({ show, aktivitasBaru = [], onC
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await onSubmit(
-      aktivitasBaru.map(nama => ({ nama, kode: kodeMap[nama] || '' }))
-    );
+    try {
+      await onSubmit(
+        aktivitasBaru.map(nama => ({ nama, kode: kodeMap[nama] || '' }))
+      );
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'Gagal menambah aktivitas');
+    }
     setLoading(false);
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full border border-white/20">
         <h3 className="text-lg font-bold mb-4 text-gray-800">Tambah Aktivitas Baru</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
