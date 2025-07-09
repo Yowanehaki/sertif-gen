@@ -34,9 +34,9 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { nama, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
+  const { nama, email, no_telp, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
   const id_sertif = generateIdWithDigits(2, 8);
-  const tahun = new Date(tgl_submit).getFullYear().toString();
+  const tahun = new Date(tgl_submit || Date.now()).getFullYear().toString();
   try {
     const result = await prisma.$transaction(async (tx) => {
       // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
@@ -55,7 +55,7 @@ exports.create = async (req, res) => {
       const no_urut = count + 1;
       // 1. Create Peserta
       const peserta = await tx.peserta.create({
-        data: { id_sertif, nama, aktivitas, tgl_submit: new Date(tgl_submit), konfirmasi_hadir }
+        data: { id_sertif, nama, email, no_telp, aktivitas, tgl_submit: new Date(tgl_submit || Date.now()), konfirmasi_hadir }
       });
       // 2. Create KodePerusahaan
       const kodePerusahaan = await tx.kodePerusahaan.create({
@@ -77,13 +77,15 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id_sertif } = req.params;
-  const { nama, aktivitas, konfirmasi_hadir, batch, nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
+  const { nama, email, no_telp, aktivitas, konfirmasi_hadir, batch, nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
   try {
     // Update peserta
     const peserta = await prisma.peserta.update({
       where: { id_sertif },
       data: {
         nama,
+        email,
+        no_telp,
         aktivitas,
         ...(typeof konfirmasi_hadir !== 'undefined' ? { konfirmasi_hadir: Boolean(konfirmasi_hadir) } : {}),
         ...(typeof nama_penguji !== 'undefined' ? { nama_penguji } : {}),

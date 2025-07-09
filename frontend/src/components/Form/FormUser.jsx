@@ -87,6 +87,49 @@ function FormUser({
         </div>
       </div>
 
+      {/* Email */}
+      <div className="group">
+        <label htmlFor="email" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">
+          <span className="w-5 h-5 mr-2 text-gray-700">@</span>
+          Email <span className="text-red-500 ml-1">*</span>
+        </label>
+        <div>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="Masukkan email Anda"
+            className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200"
+            required
+          />
+        </div>
+      </div>
+
+      {/* No Telp */}
+      <div className="group">
+        <label htmlFor="no_telp" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">
+          <span className="w-5 h-5 mr-2 text-gray-700">📞</span>
+          No Telp <span className="text-red-500 ml-1">*</span>
+        </label>
+        <div className="flex items-center">
+          <span className="px-3 py-4 bg-gray-100 border border-gray-500 border-r-0 rounded-l-lg text-gray-700 select-none">+62</span>
+          <input
+            type="text"
+            id="no_telp"
+            name="no_telp"
+            value={formData.no_telp}
+            onChange={handleInputChange}
+            placeholder="81234567890"
+            className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-r-lg transition-colors duration-200"
+            required
+            pattern="[0-9]{8,}"
+            inputMode="numeric"
+          />
+        </div>
+      </div>
+
       {/* Confirmation Checkbox */}
       <div>
         <div className="flex items-start space-x-3 p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-300">

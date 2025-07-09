@@ -36,8 +36,8 @@ const upload = multer({
 
 // Endpoint submit form peserta (PUBLIC, tidak perlu token)
 router.post('/submit', async (req, res) => {
-  const { nama, aktivitas, batch } = req.body;
-  if (!nama || !aktivitas || !batch) {
+  const { nama, email, no_telp, aktivitas, batch } = req.body;
+  if (!nama || !email || !no_telp || !aktivitas || !batch) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
   try {
@@ -68,6 +68,8 @@ router.post('/submit', async (req, res) => {
       data: {
         id_sertif,
         nama,
+        email,
+        no_telp,
         aktivitas,
         tgl_submit: now,
         konfirmasi_hadir: true
@@ -84,6 +86,7 @@ router.post('/submit', async (req, res) => {
 
     res.status(201).json({ message: 'Data berhasil disimpan', peserta, kodePerusahaan, kode_perusahaan_utuh });
   } catch (err) {
+    console.error('Error submit peserta:', err);
     res.status(500).json({ message: 'Gagal menyimpan data', error: err.message });
   }
 });

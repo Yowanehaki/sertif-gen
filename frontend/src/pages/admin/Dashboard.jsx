@@ -47,6 +47,7 @@ function Dashboard() {
   const [pendingUpload, setPendingUpload] = useState(null);
   const [aktivitasAktif, setAktivitasAktif] = useState([]);
   const [batchAktif, setBatchAktif] = useState([]);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -389,7 +390,7 @@ function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-x-hidden">
       <ToastContainer position="top-center" autoClose={3000} />
       {/* Navbar */}
       <NavigationMenu 
@@ -435,20 +436,22 @@ function Dashboard() {
 
       <div className="flex pt-20">
         {/* Sidebar */}
-        <Sidebar
-          tab={tab}
-          setTab={setTab}
-          peserta={peserta}
-          aktivitas={aktivitas}
-          sidebarItems={sidebarItems}
-          aktivitasBaru={aktivitasBaru}
-          batchList={batchList}
-          aktivitasAktif={aktivitasAktif}
-          batchAktif={batchAktif}
-        />
+        {sidebarVisible && (
+          <Sidebar
+            tab={tab}
+            setTab={setTab}
+            peserta={peserta}
+            aktivitas={aktivitas}
+            sidebarItems={sidebarItems}
+            aktivitasBaru={aktivitasBaru}
+            batchList={batchList}
+            aktivitasAktif={aktivitasAktif}
+            batchAktif={batchAktif}
+          />
+        )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 md:ml-72">
+        <main className={`flex-1 p-6 transition-all duration-300 ${sidebarVisible ? 'md:ml-72' : 'ml-0 w-full'}`}>
           {/* Download Buttons */}
           {renderDownloadButtons()}
           {/* Dashboard Tab */}
@@ -456,6 +459,12 @@ function Dashboard() {
             <div className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                  <button
+                    className="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 mb-2 md:mb-0 md:mr-4 w-fit"
+                    onClick={() => setSidebarVisible(v => !v)}
+                  >
+                    {sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+                  </button>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-1">Dashboard</h2>
                     <p className="text-gray-600">Kelola data peserta dan generate sertifikat</p>
@@ -507,6 +516,7 @@ function Dashboard() {
                     handleDeleteSingle={handleDeleteSingle}
                     refreshPeserta={refreshPeserta}
                     setNotif={setNotif}
+                    sidebarVisible={sidebarVisible}
                   />
                 </div>
               </div>

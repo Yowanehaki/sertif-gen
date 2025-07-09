@@ -10,6 +10,8 @@ datasource db {
 model Peserta {
   id_sertif         String   @id
   nama              String
+  email             String?
+  no_telp           String?
   aktivitas         String
   tgl_submit        DateTime
   nama_penguji      String?

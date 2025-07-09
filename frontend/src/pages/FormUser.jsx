@@ -11,6 +11,8 @@ import Nonactive from './Nonactive.jsx';
 function FormUser() {
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
+    no_telp: '',
     activity: '',
     batch: '',
     confirmAttendance: false
@@ -21,6 +23,7 @@ function FormUser() {
   const [activities, setActivities] = useState([]);
   const [batchList, setBatchList] = useState([]);
   const [formUserAktif, setFormUserAktif] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -66,6 +69,12 @@ function FormUser() {
     if (!formData.fullName.trim()) {
       return 'Nama lengkap wajib diisi';
     }
+    if (!formData.email.trim()) {
+      return 'Email wajib diisi';
+    }
+    if (!formData.no_telp.trim()) {
+      return 'No telp wajib diisi';
+    }
     if (!formData.activity) {
       return 'Kegiatan wajib dipilih';
     }
@@ -78,22 +87,29 @@ function FormUser() {
     return null;
   };
 
-  const handleSubmit = async (e) => {
+  const handleShowModal = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setMessage({ type: '', text: '' });
     const validationError = validateForm();
     if (validationError) {
       setMessage({ type: 'error', text: validationError });
-      setIsSubmitting(false);
       return;
     }
+    setShowConfirmModal(true);
+  };
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setIsSubmitting(true);
+    setMessage({ type: '', text: '' });
     try {
       const res = await fetch('http://localhost:5000/dashboard/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nama: formData.fullName,
+          email: formData.email,
+          no_telp: formData.no_telp,
           aktivitas: formData.activity,
           batch: formData.batch,
           companyCode: 'DEFAULT',
@@ -110,6 +126,7 @@ function FormUser() {
       setMessage({ type: 'error', text: 'Terjadi kesalahan sistem. Silakan coba lagi.' });
     }
     setIsSubmitting(false);
+    setShowConfirmModal(false);
   };
 
   if (formUserAktif === null) {
@@ -142,7 +159,7 @@ function FormUser() {
             <FormUserForm
               formData={formData}
               handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleShowModal}
               isSubmitting={isSubmitting}
               message={message}
               activities={activities}
@@ -156,6 +173,28 @@ function FormUser() {
           <p>©2025 PT. Graha Karya Informasi. All rights reserved.</p>
         </div>
       </div>
+
+      {/* Modal Konfirmasi */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full">
+            <h2 className="text-lg font-bold mb-4">Konfirmasi Kehadiran</h2>
+            <p className="mb-6">Apakah Anda yakin dengan data kehadiran Anda?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isSubmitting}
+              >Batal</button>
+              <button
+                className="px-4 py-2 rounded bg-gradient-to-r from-blue-500 via-blue-800 to-green-600 hover:from-green-700 hover:to-blue-700 text-white font-bold"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >{isSubmitting ? 'Menyimpan...' : 'Yakin & Submit'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
