@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, CheckCircle } from 'lucide-react';
 
 const TabelPeserta = ({
   filteredPeserta,
@@ -8,7 +8,8 @@ const TabelPeserta = ({
   handleSelectAll,
   handleEdit,
   handleDeleteSingle,
-  sidebarVisible
+  sidebarVisible,
+  handleVerifikasi
 }) => {
 
   return (
@@ -86,13 +87,21 @@ const TabelPeserta = ({
                     })() : '-'}</td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                        row.konfirmasi_hadir ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        row.konfirmasi_hadir ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                       }`}>
-                        {row.konfirmasi_hadir ? 'Terverifikasi' : 'Belum Verifikasi'}
+                        {row.konfirmasi_hadir ? 'Terverifikasi' : 'Belum Diverifikasi'}
                       </span>
                     </td>
                     <td className="p-4 pr-6">
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleVerifikasi(row.id_sertif)}
+                          className={`p-2 rounded-lg transition-colors duration-200 ${row.konfirmasi_hadir ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                          disabled={row.konfirmasi_hadir}
+                          title={row.konfirmasi_hadir ? 'Sudah diverifikasi' : 'Verifikasi'}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleEdit(row)}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"

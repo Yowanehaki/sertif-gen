@@ -112,6 +112,7 @@ function FormUser() {
           no_telp: formData.no_telp,
           aktivitas: formData.activity,
           batch: formData.batch,
+          konfirmasi_hadir: false,
           companyCode: 'DEFAULT',
         })
       });

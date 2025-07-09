@@ -8,6 +8,7 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import Appreciate from "./pages/Apresiasi.jsx";
 import ProtectedRoute from "./components/ProtectRoute/ProtectRoute.jsx";
+import Search from "./pages/user/Search.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")).render(
           </ProtectedRoute>
         } />
         <Route path="/apresiasi" element={<Appreciate />} />
+        <Route path="/Search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

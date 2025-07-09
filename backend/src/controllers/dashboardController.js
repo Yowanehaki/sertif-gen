@@ -28,7 +28,7 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   const { id_sertif } = req.params;
-  const data = await prisma.peserta.findUnique({ where: { id_sertif } });
+  const data = await prisma.peserta.findUnique({ where: { id_sertif }, include: { kodePerusahaan: true } });
   if (!data) return res.status(404).json({ error: 'Not found' });
   res.json(data);
 };

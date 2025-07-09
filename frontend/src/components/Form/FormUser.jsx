@@ -100,9 +100,8 @@ function FormUser({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="Masukkan email Anda"
+            placeholder="user@gmail.com"
             className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200"
-            required
           />
         </div>
       </div>
@@ -123,9 +122,6 @@ function FormUser({
             onChange={handleInputChange}
             placeholder="81234567890"
             className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-r-lg transition-colors duration-200"
-            required
-            pattern="[0-9]{8,}"
-            inputMode="numeric"
           />
         </div>
       </div>
