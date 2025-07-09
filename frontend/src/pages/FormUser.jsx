@@ -15,7 +15,7 @@ function FormUser() {
     no_telp: '',
     activity: '',
     batch: '',
-    confirmAttendance: false
+    verifikasi: false
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +81,7 @@ function FormUser() {
     if (!formData.batch) {
       return 'Batch wajib dipilih';
     }
-    if (!formData.confirmAttendance) {
+    if (!formData.verifikasi) {
       return 'Mohon ceklis konfirmasi kehadiran Anda';
     }
     return null;
@@ -112,7 +112,7 @@ function FormUser() {
           no_telp: formData.no_telp,
           aktivitas: formData.activity,
           batch: formData.batch,
-          konfirmasi_hadir: false,
+          verifikasi: !!formData.verifikasi,
           companyCode: 'DEFAULT',
         })
       });

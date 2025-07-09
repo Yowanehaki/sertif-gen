@@ -132,14 +132,14 @@ function FormUser({
           <div className="flex-shrink-0 mt-1">
             <input
               type="checkbox"
-              id="confirmAttendance"
-              name="confirmAttendance"
-              checked={formData.confirmAttendance}
+              id="verifikasi"
+              name="verifikasi"
+              checked={formData.verifikasi}
               onChange={handleInputChange}
               className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 cursor-pointer transition-all duration-200"
             />
           </div>
-          <label htmlFor="confirmAttendance" className="cursor-pointer">
+          <label htmlFor="verifikasi" className="cursor-pointer">
             <div className="flex items-center mb-1">
               <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
               <span className="font-semibold text-gray-900 text-sm md:text-base">Konfirmasi Kehadiran</span>

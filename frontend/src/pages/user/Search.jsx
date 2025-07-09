@@ -41,7 +41,7 @@ function Search() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input
                 type="text"
-                placeholder="Masukkan ID Sertifikat"
+                placeholder="Masukkan ID Validasi"
                 value={id}
                 onChange={e => {
                   setId(e.target.value);
@@ -64,7 +64,7 @@ function Search() {
             </form>
             {result && (
               <div className="mt-6 border-t pt-4 text-left">
-                <h3 className="font-bold mb-2">Data Peserta:</h3>
+                <h3 className="font-bold mb-2">Data Peserta</h3>
                 <div className="space-y-2">
                   <div className="flex items-start">
                     <div className="w-32 font-semibold text-gray-700">Nomor Sertifikat</div>

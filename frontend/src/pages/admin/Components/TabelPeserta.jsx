@@ -19,7 +19,7 @@ const TabelPeserta = ({
         <div
           className="overflow-x-auto overflow-y-auto pr-4"
           style={{
-            maxHeight: 520,
+            maxHeight: 700,
             maxWidth: sidebarVisible ? 'calc(100vw - 320px - 48px)' : '100vw'
           }}
         >

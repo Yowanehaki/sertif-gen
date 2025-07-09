@@ -36,7 +36,7 @@ const upload = multer({
 
 // Endpoint submit form peserta (PUBLIC, tidak perlu token)
 router.post('/submit', async (req, res) => {
-  const { nama, email, no_telp, aktivitas, batch, konfirmasi_hadir } = req.body;
+  const { nama, email, no_telp, aktivitas, batch, verifikasi } = req.body;
   if (!nama || !email || !no_telp || !aktivitas || !batch) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
@@ -72,7 +72,7 @@ router.post('/submit', async (req, res) => {
         no_telp,
         aktivitas,
         tgl_submit: now,
-        konfirmasi_hadir: !!konfirmasi_hadir
+        verifikasi: !!verifikasi
       }
     });
 
