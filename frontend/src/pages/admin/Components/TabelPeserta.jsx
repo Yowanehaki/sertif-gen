@@ -34,7 +34,7 @@ const TabelPeserta = ({
                     onChange={handleSelectAll}
                   />
                 </th>
-                <th className="p-4 text-left font-semibold text-white">ID Sertif</th>
+                <th className="p-4 text-left font-semibold text-white">ID</th>
                 <th className="p-4 text-left font-semibold text-white w-32">Nama</th>
                 <th className="p-4 text-left font-semibold text-white w-56">Email</th>
                 <th className="p-4 text-left font-semibold text-white w-40">No Telp</th>
@@ -54,7 +54,20 @@ const TabelPeserta = ({
                   : 'Kode belum tersedia';
                 
                 return (
-                  <tr key={row.id_sertif} className={`border-b border-gray-300 hover:bg-blue-50/50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
+                  <tr
+                    key={row.id_sertif}
+                    className={`border-b border-gray-300 hover:bg-blue-50/50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={e => {
+                      // Cegah trigger jika klik di tombol aksi
+                      if (
+                        e.target.closest('button') ||
+                        e.target.tagName === 'BUTTON' ||
+                        e.target.closest('input[type="checkbox"]')
+                      ) return;
+                      handleSelect(row.id_sertif);
+                    }}
+                  >
                     <td className="p-4">
                       <input
                         type="checkbox"
@@ -63,7 +76,7 @@ const TabelPeserta = ({
                         onChange={() => handleSelect(row.id_sertif)}
                       />
                     </td>
-                    <td className="p-4 font-mono text-xs text-gray-900">{row.id_sertif}</td>
+                    <td className="p-4 font-mono text-sm text-gray-900">{row.id_sertif}</td>
                     <td className="p-4 min-w-[180px]">
                       <div className="font-medium text-gray-900">{row.nama}</div>
                     </td>

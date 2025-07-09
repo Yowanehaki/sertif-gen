@@ -8,7 +8,7 @@ import leftImage from "../assets/logo.png";
 import LoginForm from "../components/Form/FormLogin";
 
 const Login = () => {
-  useEffect(() => { document.title = 'Login Atmin'; }, []);
+  useEffect(() => { document.title = 'Login Admin'; }, []);
   return (
     <div
       className="h-screen flex items-center justify-center bg-cover bg-center"
