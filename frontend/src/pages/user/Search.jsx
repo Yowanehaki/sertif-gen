@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getPesertaById } from '../../services/dashboard/peserta.service';
 import logo from '../../assets/logo.png';
 
@@ -7,6 +7,8 @@ function Search() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => { document.title = 'Cari Sertifikat'; }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -60,6 +60,10 @@ function Dashboard() {
     refreshBatchAktif();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Dashboard';
+  }, []);
+
   // Tampilkan modal tambah aktivitas baru setiap kali aktivitasBaru berubah
   useEffect(() => {
     if (aktivitasBaru.length > 0) setShowTambahAktivitas(true);

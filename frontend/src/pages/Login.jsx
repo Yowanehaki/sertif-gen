@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import backgroundImage from "../assets/bglogin.png";
 import iconBack from "../assets/back_icon.png";
@@ -8,6 +8,7 @@ import leftImage from "../assets/logo.png";
 import LoginForm from "../components/Form/FormLogin";
 
 const Login = () => {
+  useEffect(() => { document.title = 'Login Atmin'; }, []);
   return (
     <div
       className="h-screen flex items-center justify-center bg-cover bg-center"

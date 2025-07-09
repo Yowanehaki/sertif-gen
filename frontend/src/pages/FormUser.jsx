@@ -57,6 +57,8 @@ function FormUser() {
     fetchFormUserStatus();
   }, []);
 
+  useEffect(() => { document.title = 'Form Kehadiran'; }, []);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({

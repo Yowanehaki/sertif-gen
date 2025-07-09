@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import logo from '../assets/logo.png';
 
 //Tampilan halaman apresiasi setelah mengirimkan feedback
 const Appreciate = () => {
+  useEffect(() => { document.title = 'Graha Karya Informasi'; }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
