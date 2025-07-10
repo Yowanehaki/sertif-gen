@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getPesertaById } from '../../services/dashboard/peserta.service';
+import { Download, FileText, Image } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
 function Search() {
@@ -7,6 +8,7 @@ function Search() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => { document.title = 'Cari Sertifikat'; }, []);
 
@@ -21,11 +23,56 @@ function Search() {
     setLoading(true);
     try {
       const data = await getPesertaById(id.trim());
+      
+      // Cek apakah peserta sudah diverifikasi
+      if (!data.verifikasi) {
+        setError('Data peserta tidak ditemukan.');
+        setLoading(false);
+        return;
+      }
+      
       setResult(data);
     } catch {
       setError('Data peserta tidak ditemukan.');
     }
     setLoading(false);
+  };
+
+  const handleDownload = async (format) => {
+    if (!result) return;
+    
+    setDownloading(true);
+    try {
+      const response = await fetch(`http://localhost:5000/dashboard/${result.id_sertif}/${format === 'pdf' ? 'generate' : 'generate-png'}`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) throw new Error('Gagal mengunduh sertifikat');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sertifikat-${result.id_sertif}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      alert('Gagal mengunduh sertifikat');
+    }
+    setDownloading(false);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   return (
@@ -86,6 +133,36 @@ function Search() {
                     <div className="w-32 font-semibold text-gray-700">Aktivitas</div>
                     <div className="px-2 text-gray-700">:</div>
                     <div className="flex-1 text-gray-900">{result.aktivitas}</div>
+                  </div>
+                  {result.tgl_terbit_sertif && (
+                    <div className="flex items-start">
+                      <div className="w-32 font-semibold text-gray-700">Tanggal Diterbitkan</div>
+                      <div className="px-2 text-gray-700">:</div>
+                      <div className="flex-1 text-gray-900">{formatDate(result.tgl_terbit_sertif)}</div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Tombol Download Sertifikat */}
+                <div className="mt-6 pt-4 border-t">
+                  <h4 className="font-bold mb-3 text-gray-800">Unduh Sertifikat</h4>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDownload('pdf')}
+                      disabled={downloading}
+                      className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      <FileText className="w-4 h-4" />
+                      {downloading ? 'Mengunduh...' : 'PDF'}
+                    </button>
+                    <button
+                      onClick={() => handleDownload('png')}
+                      disabled={downloading}
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      <Image className="w-4 h-4" />
+                      {downloading ? 'Mengunduh...' : 'PNG'}
+                    </button>
                   </div>
                 </div>
               </div>

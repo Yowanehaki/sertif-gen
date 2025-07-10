@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown } from 'lucide-react';
+import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown, CheckCircle } from 'lucide-react';
 import NavigationMenu from './Components/Navbar.jsx';
 import Sidebar from './Components/Sidebar.jsx';
 import EditForm from './Components/EditForm.jsx';
@@ -50,6 +50,13 @@ function Dashboard() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [showVerifModal, setShowVerifModal] = useState(false);
   const [verifId, setVerifId] = useState(null);
+  const [selectedBulkVerif, setSelectedBulkVerif] = useState([]);
+  const [verifData, setVerifData] = useState({
+    namaPenguji: '',
+    jabatanPenguji: '',
+    tanggalTerbit: '',
+    tandaTangan: null
+  });
 
   // Ambil data peserta & aktivitas dari backend saat mount
   useEffect(() => {
@@ -196,7 +203,19 @@ function Dashboard() {
   const handleVerifikasiConfirm = async () => {
     if (!verifId) return;
     try {
-      await updatePeserta(verifId, { konfirmasi_hadir: true });
+      let ttdPath = null;
+      if (verifData.tandaTangan) {
+        const uploadRes = await uploadTandaTanganPeserta(verifId, verifData.tandaTangan);
+        ttdPath = uploadRes.path;
+      }
+      
+      await updatePeserta(verifId, { 
+        verifikasi: true,
+        nama_penguji: verifData.namaPenguji,
+        jabatan_penguji: verifData.jabatanPenguji,
+        tgl_terbit_sertif: verifData.tanggalTerbit,
+        ...(ttdPath ? { tandatangan: ttdPath } : {})
+      });
       await refreshPeserta();
       setNotif('Peserta berhasil diverifikasi');
     } catch (error) {
@@ -204,7 +223,54 @@ function Dashboard() {
     }
     setShowVerifModal(false);
     setVerifId(null);
+    setVerifData({
+      namaPenguji: '',
+      jabatanPenguji: '',
+      tanggalTerbit: '',
+      tandaTangan: null
+    });
     setTimeout(() => setNotif(''), 2000);
+  };
+
+  const handleBulkVerifikasi = async () => {
+    try {
+      // Jika ada selectedBulkVerif, gunakan itu, jika tidak gunakan verifId tunggal
+      const idsToVerify = selectedBulkVerif.length > 0 ? selectedBulkVerif : [verifId];
+      
+      // Upload tanda tangan jika ada (gunakan untuk semua peserta)
+      let ttdPath = null;
+      if (verifData.tandaTangan) {
+        const uploadRes = await uploadTandaTanganPeserta(idsToVerify[0], verifData.tandaTangan);
+        ttdPath = uploadRes.path;
+      }
+      
+      // Update semua peserta yang dipilih
+      await Promise.all(idsToVerify.map(id => updatePeserta(id, { 
+        verifikasi: true,
+        nama_penguji: verifData.namaPenguji,
+        jabatan_penguji: verifData.jabatanPenguji,
+        tgl_terbit_sertif: verifData.tanggalTerbit,
+        ...(ttdPath ? { tandatangan: ttdPath } : {})
+      })));
+      
+      await refreshPeserta();
+      setNotif(`${idsToVerify.length} peserta berhasil diverifikasi`);
+      
+      // Reset state
+      setShowVerifModal(false);
+      setVerifId(null);
+      setSelectedBulkVerif([]);
+      setSelected([]); // Clear selection after bulk verify
+      setVerifData({
+        namaPenguji: '',
+        jabatanPenguji: '',
+        tanggalTerbit: '',
+        tandaTangan: null
+      });
+    } catch (error) {
+      setNotif('Gagal verifikasi peserta: ' + error.message);
+    }
+    setTimeout(() => setNotif(''), 3000);
   };
 
   const handleOpenDeleteBatch = (id) => {
@@ -509,6 +575,22 @@ function Dashboard() {
                       <span>Generate Sertifikat</span>
                     </button>
                     <button
+                      onClick={() => {
+                        setSelectedBulkVerif(selected);
+                        setShowVerifModal(true);
+                      }}
+                      className={
+                        'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
+                        (selected.length === 0
+                          ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-purple-700 text-white')
+                      }
+                      disabled={selected.length === 0}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Verifikasi ({selected.length})</span>
+                    </button>
+                    <button
                       onClick={() => setShowDelete(true)}
                       className={
                         'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
@@ -759,25 +841,130 @@ function Dashboard() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Konfirmasi Verifikasi</h3>
+                <h3 className="text-xl font-bold text-gray-800">
+                  {selectedBulkVerif.length > 0 ? 'Verifikasi Bulk' : 'Verifikasi Peserta'}
+                </h3>
                 <button
-                  onClick={() => setShowVerifModal(false)}
+                  onClick={() => {
+                    setShowVerifModal(false);
+                    setVerifId(null);
+                    setSelectedBulkVerif([]);
+                    setVerifData({
+                      namaPenguji: '',
+                      jabatanPenguji: '',
+                      tanggalTerbit: '',
+                      tandaTangan: null
+                    });
+                  }}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                 >
-                  <span className="text-gray-500 text-lg">&times;</span>
+                  <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-              <div className="mb-6 text-gray-700">Apakah Anda yakin ingin memverifikasi peserta ini?</div>
-              <div className="flex justify-end gap-3">
+              
+              <form onSubmit={async e => {
+                e.preventDefault();
+                if (selectedBulkVerif.length > 0) {
+                  await handleBulkVerifikasi();
+                } else {
+                  await handleVerifikasiConfirm();
+                }
+              }} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Nama Penguji</label>
+                  <input 
+                    type="text" 
+                    className="w-full border rounded-lg px-3 py-2" 
+                    value={verifData.namaPenguji} 
+                    onChange={e => setVerifData({...verifData, namaPenguji: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Jabatan Penguji</label>
+                  <input 
+                    type="text" 
+                    className="w-full border rounded-lg px-3 py-2" 
+                    value={verifData.jabatanPenguji} 
+                    onChange={e => setVerifData({...verifData, jabatanPenguji: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Tanggal Terbit</label>
+                  <input 
+                    type="date" 
+                    className="w-full border rounded-lg px-3 py-2" 
+                    value={verifData.tanggalTerbit} 
+                    onChange={e => setVerifData({...verifData, tanggalTerbit: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      onChange={e => setVerifData({ ...verifData, tandaTangan: e.target.files[0] })}
+                    />
+                    {verifData.tandaTangan && (
                 <button
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
-                  onClick={() => setShowVerifModal(false)}
-                >Batal</button>
+                        type="button"
+                        className="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 border border-red-200 rounded"
+                        onClick={() => setVerifData({ ...verifData, tandaTangan: null })}
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                  {verifData.tandaTangan && (
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="text-xs text-gray-600">File: {verifData.tandaTangan.name}</span>
+                      <img
+                        src={URL.createObjectURL(verifData.tandaTangan)}
+                        alt="Preview Tanda Tangan"
+                        className="h-12 border rounded shadow"
+                        style={{ maxWidth: 120, objectFit: 'contain' }}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mb-4 text-gray-700">
+                  {selectedBulkVerif.length > 0 
+                    ? `Akan memverifikasi ${selectedBulkVerif.length} peserta yang dipilih`
+                    : 'Akan memverifikasi peserta ini'
+                  }
+                </div>
+                
+                <div className="flex space-x-3 pt-2">
                 <button
-                  className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-bold"
-                  onClick={handleVerifikasiConfirm}
-                >Verifikasi</button>
+                    type="submit" 
+                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+                  >
+                    Verifikasi
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setShowVerifModal(false);
+                      setVerifId(null);
+                      setSelectedBulkVerif([]);
+                      setVerifData({
+                        namaPenguji: '',
+                        jabatanPenguji: '',
+                        tanggalTerbit: '',
+                        tandaTangan: null
+                      });
+                    }} 
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200"
+                  >
+                    Batal
+                  </button>
               </div>
+              </form>
             </div>
           </div>
         </div>

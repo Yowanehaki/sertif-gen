@@ -41,14 +41,13 @@ router.post('/excel', accessValidation, async (req, res) => {
         const kodeAktivitas = aktivitasMap[row.Aktivitas] || 'UNK';
         const batch = row.Batch || 'BATCH';
         const companyCode = `${kodePerusahaan}/${kodeAktivitas}/${tahun}/${batch}/${noUrut}`;
-        await prisma.dashboard.create({
+        await prisma.peserta.create({
           data: {
             id_sertif: generateIdWithDigits(2, 12),
             nama: row.Nama,
             aktivitas: row.Aktivitas,
-            kode_perusahaan: companyCode,
             tgl_submit: new Date(),
-            konfirmasi_hadir: true,
+            verifikasi: false,
           }
         });
       }

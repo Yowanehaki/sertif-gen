@@ -28,6 +28,38 @@ function EditPeserta({ show, onClose, editData, setEditData, onSave, aktivitas, 
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={editData?.email || ''}
+                  onChange={e => setEditData({...editData, email: e.target.value})}
+                  placeholder="Masukkan email atau '-' jika kosong"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">No Telp</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={editData?.no_telp || ''}
+                  onChange={e => {
+                    const value = e.target.value;
+                    // Jika value adalah '-', izinkan
+                    if (value === '-') {
+                      setEditData({...editData, no_telp: value});
+                      return;
+                    }
+                    // Hapus semua karakter non-angka
+                    const cleanValue = value.replace(/[^0-9]/g, '');
+                    // Batasi panjang maksimal 13 digit
+                    const limitedValue = cleanValue.slice(0, 13);
+                    setEditData({...editData, no_telp: limitedValue});
+                  }}
+                  placeholder="Contoh: 081234567890 atau '-' jika kosong"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Aktivitas</label>
                 <select
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"

@@ -40,6 +40,15 @@ router.post('/submit', async (req, res) => {
   if (!nama || !email || !no_telp || !aktivitas || !batch) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
+  
+  // Validasi format nomor telepon
+  const phoneRegex = /^08[0-9]{8,11}$/;
+  if (!phoneRegex.test(no_telp)) {
+    return res.status(400).json({ 
+      message: 'Format nomor telepon tidak valid. Gunakan format: 081234567890 (minimal 11 digit, maksimal 13 digit)' 
+    });
+  }
+  
   try {
     // Ambil kode aktivitas dari tabel Aktivitas
     const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas } });
@@ -47,20 +56,14 @@ router.post('/submit', async (req, res) => {
     const now = new Date();
     const tahun = now.getFullYear().toString();
 
-    // Hitung no_urut berdasarkan kombinasi kode, tahun, batch
-    const count = await prisma.kodePerusahaan.count({
-      where: {
-        kode,
-        batch,
-        peserta: {
-          tgl_submit: {
-            gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-            lte: new Date(`${tahun}-12-31T23:59:59.999Z`)
-          }
-        }
-      }
+    // Cari no_urut terkecil yang belum dipakai
+    const existing = await prisma.kodePerusahaan.findMany({
+      where: { kode, batch },
+      select: { no_urut: true }
     });
-    const no_urut = count + 1;
+    const existingNoUrut = new Set(existing.map(e => e.no_urut));
+    let no_urut = 1;
+    while (existingNoUrut.has(no_urut)) no_urut++;
     const id_sertif = generateIdWithDigits(2, 8);
 
     // 1. Create Peserta
@@ -72,7 +75,7 @@ router.post('/submit', async (req, res) => {
         no_telp,
         aktivitas,
         tgl_submit: now,
-        verifikasi: !!verifikasi
+        verifikasi: false
       }
     });
 

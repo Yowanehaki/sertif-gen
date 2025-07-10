@@ -61,10 +61,25 @@ function FormUser() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    
+    // Validasi khusus untuk nomor telepon
+    if (name === 'no_telp') {
+      // Hapus semua karakter non-angka
+      const cleanValue = value.replace(/[^0-9]/g, '');
+      
+      // Batasi panjang maksimal 13 digit
+      const limitedValue = cleanValue.slice(0, 13);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: limitedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const validateForm = () => {
@@ -74,9 +89,18 @@ function FormUser() {
     if (!formData.email.trim()) {
       return 'Email wajib diisi';
     }
+    
+    // Validasi nomor telepon
     if (!formData.no_telp.trim()) {
       return 'No telp wajib diisi';
     }
+    
+    // Validasi format nomor telepon
+    const phoneRegex = /^08[0-9]{8,11}$/;
+    if (!phoneRegex.test(formData.no_telp)) {
+      return 'Format nomor telepon tidak valid. Gunakan format: 081234567890 (minimal 11 digit, maksimal 13 digit)';
+    }
+    
     if (!formData.activity) {
       return 'Kegiatan wajib dipilih';
     }

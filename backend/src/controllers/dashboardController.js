@@ -34,7 +34,19 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { nama, email, no_telp, aktivitas, tgl_submit, kode, batch, konfirmasi_hadir } = req.body;
+  const { nama, email, no_telp, aktivitas, tgl_submit, kode, batch, verifikasi } = req.body;
+  
+  // Validasi nomor telepon
+  if (no_telp && no_telp !== '-') {
+    const phoneRegex = /^08[0-9]{8,11}$/;
+    if (!phoneRegex.test(no_telp)) {
+      return res.status(400).json({ 
+        error: 'Format nomor telepon tidak valid', 
+        message: 'Gunakan format: 081234567890 (minimal 11 digit, maksimal 13 digit)' 
+      });
+    }
+  }
+  
   const id_sertif = generateIdWithDigits(2, 8);
   const tahun = new Date(tgl_submit || Date.now()).getFullYear().toString();
   try {
@@ -55,7 +67,7 @@ exports.create = async (req, res) => {
       const no_urut = count + 1;
       // 1. Create Peserta
       const peserta = await tx.peserta.create({
-        data: { id_sertif, nama, email, no_telp, aktivitas, tgl_submit: new Date(tgl_submit || Date.now()), konfirmasi_hadir }
+        data: { id_sertif, nama, email, no_telp, aktivitas, tgl_submit: new Date(tgl_submit || Date.now()), verifikasi }
       });
       // 2. Create KodePerusahaan
       const kodePerusahaan = await tx.kodePerusahaan.create({
@@ -77,23 +89,37 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id_sertif } = req.params;
-  const { nama, email, no_telp, aktivitas, konfirmasi_hadir, batch, nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
+  const { nama, email, no_telp, aktivitas, verifikasi, batch, nama_penguji, jabatan_penguji, tgl_terbit_sertif, tandatangan } = req.body;
+  
+  // Validasi nomor telepon jika ada
+  if (no_telp && no_telp !== '-') {
+    const phoneRegex = /^08[0-9]{8,11}$/;
+    if (!phoneRegex.test(no_telp)) {
+      return res.status(400).json({ 
+        error: 'Format nomor telepon tidak valid', 
+        message: 'Gunakan format: 081234567890 (minimal 11 digit, maksimal 13 digit)' 
+      });
+    }
+  }
+  
   try {
     // Update peserta
     const peserta = await prisma.peserta.update({
       where: { id_sertif },
       data: {
-        nama,
-        email,
-        no_telp,
-        aktivitas,
-        ...(typeof konfirmasi_hadir !== 'undefined' ? { konfirmasi_hadir: Boolean(konfirmasi_hadir) } : {}),
+        ...(typeof nama !== 'undefined' ? { nama } : {}),
+        ...(typeof email !== 'undefined' ? { email } : {}),
+        ...(typeof no_telp !== 'undefined' ? { no_telp } : {}),
+        ...(typeof aktivitas !== 'undefined' ? { aktivitas } : {}),
+        ...(typeof verifikasi !== 'undefined' ? { verifikasi: Boolean(verifikasi) } : {}),
         ...(typeof nama_penguji !== 'undefined' ? { nama_penguji } : {}),
         ...(typeof jabatan_penguji !== 'undefined' ? { jabatan_penguji } : {}),
         ...(typeof tgl_terbit_sertif !== 'undefined' ? { tgl_terbit_sertif: tgl_terbit_sertif ? new Date(tgl_terbit_sertif) : null } : {}),
         ...(typeof tandatangan !== 'undefined' ? { tandatangan } : {}),
-      }
+      },
+      include: { kodePerusahaan: true }
     });
+    
     // Update batch & no_urut jika batch atau aktivitas diubah
     if (batch || aktivitas) {
       // Ambil kode aktivitas dari tabel Aktivitas
@@ -125,6 +151,7 @@ exports.update = async (req, res) => {
     }
     res.json(peserta);
   } catch (error) {
+    console.error('Error updating peserta:', error);
     res.status(500).json({ error: 'Gagal update data', message: error.message });
   }
 };

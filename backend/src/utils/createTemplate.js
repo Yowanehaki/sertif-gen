@@ -4,13 +4,14 @@ const path = require('path');
 
 function createExcelTemplate() {
   const templateData = [
-    { Nama: 'Budi Santoso', Aktivitas: 'Try Out CPNS 2025', Batch: 'VII' },
-    { Nama: 'Siti Aminah', Aktivitas: 'Seminar Digital Marketing', Batch: 'I' },
+    { Nama: 'Budi Santoso', Email: 'budi.santoso@email.com', NoTelp: '081234567890', Aktivitas: 'Try Out CPNS 2025', Batch: 'VII' },
+    { Nama: 'Siti Aminah', Email: 'siti.aminah@email.com', NoTelp: '081234567891', Aktivitas: 'Seminar Digital Marketing', Batch: 'I' },
+    { Nama: 'Ahmad Rizki', Email: 'ahmad.rizki@email.com', NoTelp: '-', Aktivitas: 'Workshop Design Thinking', Batch: 'III' },
   ];
   const workbook = XLSX.utils.book_new();
   const worksheet = XLSX.utils.json_to_sheet(templateData);
   worksheet['!cols'] = [
-    { wch: 20 }, { wch: 30 }, { wch: 8 }
+    { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 30 }, { wch: 8 }
   ];
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Peserta');
   const assetsDir = path.join(__dirname, '../../assets');

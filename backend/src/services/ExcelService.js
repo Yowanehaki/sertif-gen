@@ -21,6 +21,8 @@ class ExcelService {
         if (!header) return;
         const h = header.toString().trim().toLowerCase();
         if (h === 'nama') headerMapping.nama = idx;
+        if (h === 'email') headerMapping.email = idx;
+        if (h === 'notelp' || h === 'no telp' || h === 'no_telp') headerMapping.no_telp = idx;
         if (h === 'aktivitas') headerMapping.aktivitas = idx;
         if (h === 'batch') headerMapping.batch = idx;
       });
@@ -33,9 +35,24 @@ class ExcelService {
         .filter(row => row.some(cell => cell !== null && cell !== undefined && cell !== ''))
         .map(row => {
           const nama = row[headerMapping.nama];
+          const email = row[headerMapping.email] || '-';
+          let no_telp = row[headerMapping.no_telp] || '-';
+          
+          // Validasi dan pembersihan nomor telepon
+          if (no_telp !== '-') {
+            // Hapus semua karakter non-angka
+            no_telp = no_telp.toString().replace(/[^0-9]/g, '');
+            
+            // Validasi format nomor telepon
+            const phoneRegex = /^08[0-9]{8,11}$/;
+            if (!phoneRegex.test(no_telp)) {
+              throw new Error(`Format nomor telepon tidak valid untuk ${nama}: ${row[headerMapping.no_telp]}. Gunakan format: 081234567890`);
+            }
+          }
+          
           const aktivitas = row[headerMapping.aktivitas];
           const batch = row[headerMapping.batch];
-          return { nama, aktivitas, batch };
+          return { nama, email, no_telp, aktivitas, batch };
         });
     } catch (error) {
       throw new Error(`Error parsing Excel file: ${error.message}`);
@@ -103,9 +120,11 @@ class ExcelService {
               data: {
                 id_sertif,
                 nama: p.nama,
+                email: p.email,
+                no_telp: p.no_telp,
                 aktivitas: p.aktivitas,
                 tgl_submit: now,
-                konfirmasi_hadir: true,
+                verifikasi: false,
                 kodePerusahaan: {
                   create: {
                     kode: kodeAktivitas,

@@ -112,16 +112,15 @@ function FormUser({
           <span className="w-5 h-5 mr-2 text-gray-700">📞</span>
           No Telp <span className="text-red-500 ml-1">*</span>
         </label>
-        <div className="flex items-center">
-          <span className="px-3 py-4 bg-gray-100 border border-gray-500 border-r-0 rounded-l-lg text-gray-700 select-none">+62</span>
+        <div>
           <input
             type="text"
             id="no_telp"
             name="no_telp"
             value={formData.no_telp}
             onChange={handleInputChange}
-            placeholder="81234567890"
-            className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-r-lg transition-colors duration-200"
+            placeholder="081234567890"
+            className="w-full px-4 py-4 md:py-4 text-sm md:text-base border border-gray-500 rounded-lg transition-colors duration-200"
           />
         </div>
       </div>
