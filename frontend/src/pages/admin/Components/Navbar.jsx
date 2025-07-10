@@ -73,7 +73,7 @@ export default function NavigationMenu({ currentTab, onTabChange }) {
                 <img src={logo} alt="Logo" className="w-25 h-25 object-contain" />
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-red-600 bg-clip-text text-transparent">
-                Genarate Sertificate
+                 Akses Sertifikat
               </h1>
             </div>
             

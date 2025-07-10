@@ -1,8 +1,14 @@
 import React from 'react';
 
-function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [], batchList = [], aktivitasAktif = [], batchAktif = [] }) {
+function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [], batchList = [], aktivitasAktif = [], batchAktif = [], visible = true }) {
   return (
-    <aside className="w-72 min-h-screen h-full bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 hidden md:block fixed left-0 top-0 md:top-20 z-30">
+    <aside
+      className={
+        `w-72 min-h-screen h-full bg-white/70 backdrop-blur-sm border-r border-white/20 p-6 fixed left-0 top-0 md:top-20 z-30 transition-all duration-500 ease-in-out
+        ${visible ? 'md:translate-x-0 md:opacity-100 md:pointer-events-auto' : 'md:-translate-x-full md:opacity-0 md:pointer-events-none'}
+        hidden md:block`
+      }
+    >
       <div className="space-y-3">
         {sidebarItems.map((item) => {
           const Icon = item.icon;

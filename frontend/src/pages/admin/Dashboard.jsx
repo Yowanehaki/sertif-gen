@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown, CheckCircle } from 'lucide-react';
+import { Home, Upload, Settings, Edit, Trash2, Plus, Download, Users, FileText, Calendar, Search, X, ChevronDown, CheckCircle, Menu } from 'lucide-react';
 import NavigationMenu from './Components/Navbar.jsx';
 import Sidebar from './Components/Sidebar.jsx';
 import EditForm from './Components/EditForm.jsx';
@@ -20,7 +20,7 @@ function Dashboard() {
   const [tab, setTab] = useState('dashboard');
   const [peserta, setPeserta] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '', no_urut: '' });
+  const [filter, setFilter] = useState({ nama: '', aktivitas: '', tgl: '', no_urut: '', verifikasi: '' });
   const [showDelete, setShowDelete] = useState(false);
   const [selectedSingleDelete, setSelectedSingleDelete] = useState(null);
   const [aktivitas, setAktivitas] = useState([]);
@@ -117,7 +117,8 @@ function Dashboard() {
     (filter.batch ? (p.kodePerusahaan && p.kodePerusahaan.batch === filter.batch) : true) &&
     (filter.tgl
       ? formatDateDMY(p.tgl_submit || p.tgl) === formatDateDMY(filter.tgl)
-      : true)
+      : true) &&
+    (filter.verifikasi !== '' ? p.verifikasi === (filter.verifikasi === 'true') : true)
   );
 
   // Sort berdasarkan no_urut jika ada
@@ -237,15 +238,35 @@ function Dashboard() {
       // Jika ada selectedBulkVerif, gunakan itu, jika tidak gunakan verifId tunggal
       const idsToVerify = selectedBulkVerif.length > 0 ? selectedBulkVerif : [verifId];
       
+      // Filter hanya peserta yang belum diverifikasi
+      const unverifiedIds = idsToVerify.filter(id => {
+        const pesertaData = peserta.find(p => p.id_sertif === id);
+        return pesertaData && !pesertaData.verifikasi;
+      });
+      
+      if (unverifiedIds.length === 0) {
+        setNotif('Tidak ada peserta yang perlu diverifikasi');
+        setShowVerifModal(false);
+        setVerifId(null);
+        setSelectedBulkVerif([]);
+        setVerifData({
+          namaPenguji: '',
+          jabatanPenguji: '',
+          tanggalTerbit: '',
+          tandaTangan: null
+        });
+        return;
+      }
+      
       // Upload tanda tangan jika ada (gunakan untuk semua peserta)
       let ttdPath = null;
       if (verifData.tandaTangan) {
-        const uploadRes = await uploadTandaTanganPeserta(idsToVerify[0], verifData.tandaTangan);
+        const uploadRes = await uploadTandaTanganPeserta(unverifiedIds[0], verifData.tandaTangan);
         ttdPath = uploadRes.path;
       }
       
-      // Update semua peserta yang dipilih
-      await Promise.all(idsToVerify.map(id => updatePeserta(id, { 
+      // Update semua peserta yang belum diverifikasi
+      await Promise.all(unverifiedIds.map(id => updatePeserta(id, { 
         verifikasi: true,
         nama_penguji: verifData.namaPenguji,
         jabatan_penguji: verifData.jabatanPenguji,
@@ -254,7 +275,7 @@ function Dashboard() {
       })));
       
       await refreshPeserta();
-      setNotif(`${idsToVerify.length} peserta berhasil diverifikasi`);
+      setNotif(`${unverifiedIds.length} peserta berhasil diverifikasi`);
       
       // Reset state
       setShowVerifModal(false);
@@ -538,6 +559,7 @@ function Dashboard() {
             batchList={batchList}
             aktivitasAktif={aktivitasAktif}
             batchAktif={batchAktif}
+            visible={sidebarVisible}
           />
         )}
 
@@ -551,10 +573,11 @@ function Dashboard() {
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                   <button
-                    className="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 mb-2 md:mb-0 md:mr-4 w-fit"
+                    className="md:inline-flex hidden items-center justify-center p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 mb-2 md:mb-0 md:mr-4"
                     onClick={() => setSidebarVisible(v => !v)}
+                    title={sidebarVisible ? 'Sembunyikan Sidebar' : 'Tampilkan Sidebar'}
                   >
-                    {sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+                    <Menu className="w-6 h-6" />
                   </button>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-1">Dashboard</h2>
@@ -567,7 +590,7 @@ function Dashboard() {
                         'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
                         (selected.length === 0
                           ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white')
+                          : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white')
                       }
                       disabled={selected.length === 0 || isGenerating}
                     >
@@ -581,11 +604,11 @@ function Dashboard() {
                       }}
                       className={
                         'px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ' +
-                        (selected.length === 0
+                        (selected.length === 0 || selected.some(id => peserta.find(p => p.id_sertif === id)?.verifikasi)
                           ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-600 hover:to-purple-700 text-white')
+                          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white')
                       }
-                      disabled={selected.length === 0}
+                      disabled={selected.length === 0 || selected.some(id => peserta.find(p => p.id_sertif === id)?.verifikasi)}
                     >
                       <CheckCircle className="w-4 h-4" />
                       <span>Verifikasi ({selected.length})</span>
@@ -934,7 +957,13 @@ function Dashboard() {
                 
                 <div className="mb-4 text-gray-700">
                   {selectedBulkVerif.length > 0 
-                    ? `Akan memverifikasi ${selectedBulkVerif.length} peserta yang dipilih`
+                    ? (() => {
+                        const unverifiedCount = selectedBulkVerif.filter(id => {
+                          const pesertaData = peserta.find(p => p.id_sertif === id);
+                          return pesertaData && !pesertaData.verifikasi;
+                        }).length;
+                        return `Akan memverifikasi ${unverifiedCount} dari ${selectedBulkVerif.length} peserta yang dipilih`;
+                      })()
                     : 'Akan memverifikasi peserta ini'
                   }
                 </div>
@@ -942,7 +971,19 @@ function Dashboard() {
                 <div className="flex space-x-3 pt-2">
                 <button
                     type="submit" 
-                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+                    className={
+                      'flex-1 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ' +
+                      (selectedBulkVerif.length > 0 && selectedBulkVerif.every(id => {
+                        const pesertaData = peserta.find(p => p.id_sertif === id);
+                        return pesertaData && pesertaData.verifikasi;
+                      })
+                        ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white')
+                    }
+                    disabled={selectedBulkVerif.length > 0 && selectedBulkVerif.every(id => {
+                      const pesertaData = peserta.find(p => p.id_sertif === id);
+                      return pesertaData && pesertaData.verifikasi;
+                    })}
                   >
                     Verifikasi
                   </button>

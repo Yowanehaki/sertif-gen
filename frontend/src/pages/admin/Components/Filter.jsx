@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Filter as FilterIcon, Calendar, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Search, Filter as FilterIcon, Calendar, ChevronDown, ArrowUpDown, CheckCircle, XCircle } from 'lucide-react';
 
 const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
   const sortRef = useRef(null);
@@ -10,12 +10,17 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
   const [showAktivitasList, setShowAktivitasList] = useState(false);
   const [showBatchList, setShowBatchList] = useState(false);
   const [showSortList, setShowSortList] = useState(false);
+  const [showVerifikasiList, setShowVerifikasiList] = useState(false);
 
   // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sortRef.current && !sortRef.current.contains(event.target)) {
         setShowSortList(false);
+      }
+      // Close verifikasi dropdown when clicking outside
+      if (!event.target.closest('.verifikasi-dropdown')) {
+        setShowVerifikasiList(false);
       }
     };
 
@@ -36,9 +41,21 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
     { value: 'desc', label: 'No.Urut ↓ (Terbaru)' }
   ];
 
+  // Opsi status verifikasi
+  const verifikasiOptions = [
+    { value: '', label: 'Semua Status', icon: null },
+    { value: 'true', label: 'Sudah Diverifikasi', icon: <CheckCircle className="w-4 h-4 text-green-500" /> },
+    { value: 'false', label: 'Belum Diverifikasi', icon: <XCircle className="w-4 h-4 text-red-500" /> }
+  ];
+
   const getSortLabel = (value) => {
     const option = sortOptions.find(opt => opt.value === value);
     return option ? option.label : 'Urutan Default';
+  };
+
+  const getVerifikasiLabel = (value) => {
+    const option = verifikasiOptions.find(opt => opt.value === value);
+    return option ? option.label : 'Semua Status';
   };
 
   const filterForm = (
@@ -49,7 +66,7 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
         <input
           type="text"
           placeholder="Cari nama peserta..."
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl transition-all duration-200"
           value={filter.nama}
           onChange={e => setFilter(f => ({ ...f, nama: e.target.value }))}
         />
@@ -60,7 +77,7 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
         <input
           type="text"
           placeholder="Urutkan No.Urut"
-          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-full bg-white"
+          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl transition-all duration-200 w-full bg-white"
           value={getSortLabel(filter.no_urut)}
           onFocus={() => setShowSortList(true)}
           readOnly
@@ -89,7 +106,7 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
         <input
           type="text"
           placeholder="Cari aktivitas..."
-          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-full bg-white"
+          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl transition-all duration-200 w-full bg-white"
           value={searchAktivitas}
           onFocus={() => setShowAktivitasList(true)}
           onChange={e => {
@@ -132,7 +149,7 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
         <input
           type="text"
           placeholder="Cari batch..."
-          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-full bg-white"
+          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl transition-all duration-200 w-full bg-white"
           value={searchBatch}
           onFocus={() => setShowBatchList(true)}
           onChange={e => {
@@ -174,10 +191,40 @@ const Filter = ({ filter, setFilter, aktivitas, batches = [], noCard }) => {
         <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input
           type="date"
-          className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl transition-all duration-200"
           value={filter.tgl_submit}
           onChange={e => setFilter(f => ({ ...f, tgl: e.target.value }))}
         />
+      </div>
+      {/* Dropdown Status Verifikasi */}
+      <div className="relative min-w-40 verifikasi-dropdown">
+        <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <input
+          type="text"
+          placeholder="Status Verifikasi"
+          className="pl-10 pr-8 py-3 border border-gray-200 rounded-t-xl transition-all duration-200 w-full bg-white"
+          value={getVerifikasiLabel(filter.verifikasi)}
+          onFocus={() => setShowVerifikasiList(true)}
+          readOnly
+        />
+        {showVerifikasiList && (
+          <div className="absolute left-0 right-0 bg-white border border-t-0 border-gray-200 rounded-b-xl max-h-40 overflow-y-auto z-20 shadow-lg">
+            {verifikasiOptions.map(option => (
+              <div
+                key={option.value}
+                className="px-4 py-2 cursor-pointer hover:bg-blue-100 flex items-center gap-2"
+                onClick={() => {
+                  setFilter(f => ({ ...f, verifikasi: option.value }));
+                  setShowVerifikasiList(false);
+                }}
+              >
+                {option.icon}
+                {option.label}
+              </div>
+            ))}
+          </div>
+        )}
+        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
       </div>
     </div>
   );

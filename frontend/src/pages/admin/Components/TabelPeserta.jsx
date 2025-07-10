@@ -107,14 +107,23 @@ const TabelPeserta = ({
                     </td>
                     <td className="p-4 pr-6">
                       <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleVerifikasi(row.id_sertif)}
-                          className={`p-2 rounded-lg transition-colors duration-200 ${row.verifikasi ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-                          disabled={row.verifikasi}
-                          title={row.verifikasi ? 'Sudah diverifikasi' : 'Verifikasi'}
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
+                        {row.verifikasi ? (
+                          <button
+                            className="p-2 bg-gray-200 text-gray-400 cursor-not-allowed rounded-lg transition-colors duration-200"
+                            disabled={true}
+                            title="Sudah diverifikasi"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleVerifikasi(row.id_sertif)}
+                            className="p-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors duration-200"
+                            title="Verifikasi"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEdit(row)}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"

@@ -56,9 +56,9 @@ router.post('/submit', async (req, res) => {
     const now = new Date();
     const tahun = now.getFullYear().toString();
 
-    // Cari no_urut terkecil yang belum dipakai
+    // Cari no_urut terkecil yang belum dipakai untuk kombinasi kode, batch, tahun
     const existing = await prisma.kodePerusahaan.findMany({
-      where: { kode, batch },
+      where: { kode, batch, tahun: parseInt(tahun) },
       select: { no_urut: true }
     });
     const existingNoUrut = new Set(existing.map(e => e.no_urut));
@@ -81,7 +81,7 @@ router.post('/submit', async (req, res) => {
 
     // 2. Create KodePerusahaan
     const kodePerusahaan = await prisma.kodePerusahaan.create({
-      data: { id_sertif, kode, batch, no_urut }
+      data: { id_sertif, kode, batch, tahun: parseInt(tahun), no_urut }
     });
 
     // 3. Generate kode perusahaan utuh

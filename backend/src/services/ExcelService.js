@@ -38,15 +38,26 @@ class ExcelService {
           const email = row[headerMapping.email] || '-';
           let no_telp = row[headerMapping.no_telp] || '-';
           
-          // Validasi dan pembersihan nomor telepon
+          // Normalisasi nomor telepon untuk berbagai format input
           if (no_telp !== '-') {
-            // Hapus semua karakter non-angka
             no_telp = no_telp.toString().replace(/[^0-9]/g, '');
             
-            // Validasi format nomor telepon
+            // Normalisasi berdasarkan format:
+            // 1. Jika dimulai dengan "62" (62813...), hapus "62" dan tambah "0"
+            if (no_telp.startsWith('62')) {
+              no_telp = '0' + no_telp.substring(2);
+            }
+            // 2. Jika dimulai dengan "8" (813...), tambah "0" di depan
+            else if (no_telp.startsWith('8')) {
+              no_telp = '0' + no_telp;
+            }
+            // 3. Jika sudah dimulai dengan "08", biarkan
+            // 4. Format lain akan ditolak oleh validasi regex
+            
+            // Validasi format nomor telepon (harus 08xxx dengan total 11-13 digit)
             const phoneRegex = /^08[0-9]{8,11}$/;
             if (!phoneRegex.test(no_telp)) {
-              throw new Error(`Format nomor telepon tidak valid untuk ${nama}: ${row[headerMapping.no_telp]}. Gunakan format: 081234567890`);
+              throw new Error(`Format nomor telepon tidak valid untuk ${nama}: ${row[headerMapping.no_telp]}. Gunakan format: 081234567890 atau 8134567890 atau 628134567890`);
             }
           }
           
@@ -99,21 +110,14 @@ class ExcelService {
             // Ambil kode aktivitas dari tabel Aktivitas
             const aktivitasObj = await tx.aktivitas.findUnique({ where: { nama: p.aktivitas } });
             const kodeAktivitas = aktivitasObj ? aktivitasObj.kode : '';
-            // Hitung nomor urut untuk kombinasi aktivitas, batch, tahun
-            const count = await tx.kodePerusahaan.count({
-              where: {
-                batch: p.batch,
-                kode: kodeAktivitas,
-                peserta: {
-                  aktivitas: p.aktivitas,
-                  tgl_submit: {
-                    gte: new Date(`${tahun}-01-01T00:00:00.000Z`),
-                    lte: new Date(`${tahun}-12-31T23:59:59.999Z`),
-                  },
-                },
-              },
+            // Cari no_urut terkecil yang belum dipakai untuk kombinasi kode, batch, tahun
+            const existing = await tx.kodePerusahaan.findMany({
+              where: { kode: kodeAktivitas, batch: p.batch, tahun: parseInt(tahun) },
+              select: { no_urut: true }
             });
-            const no_urut = count + 1;
+            const existingNoUrut = new Set(existing.map(e => e.no_urut));
+            let no_urut = 1;
+            while (existingNoUrut.has(no_urut)) no_urut++;
             // Insert peserta dan kode perusahaan
             const id_sertif = nanoid();
             const peserta = await tx.peserta.create({
@@ -129,6 +133,7 @@ class ExcelService {
                   create: {
                     kode: kodeAktivitas,
                     batch: p.batch,
+                    tahun: parseInt(tahun),
                     no_urut
                   }
                 }

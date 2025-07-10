@@ -39,10 +39,11 @@ model KodePerusahaan {
   id_sertif   String   @id
   kode        String
   batch       String
+  tahun       Int
   no_urut     Int
   peserta     Peserta  @relation(fields: [id_sertif], references: [id_sertif])
 
-  @@unique([kode, batch, no_urut])
+  @@unique([kode, batch, tahun, no_urut])
 }
 
 model Batch {

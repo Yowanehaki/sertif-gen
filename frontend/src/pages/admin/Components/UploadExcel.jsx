@@ -94,8 +94,8 @@ export default function UploadExcel({ onPreviewConfirm }) {
                 <tbody>
                   {previewData.slice(1).map((row, i) => (
                     <tr key={i}>
-                      {row.map((cell, j) => (
-                        <td key={j} className="border px-2 py-1">{cell}</td>
+                      {previewData[0].map((_, j) => (
+                        <td key={j} className="border px-2 py-1">{row[j] !== undefined && row[j] !== '' ? row[j] : '-'}</td>
                       ))}
                     </tr>
                   ))}
