@@ -204,7 +204,7 @@ function FormUser() {
       {/* Modal Konfirmasi */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full" style={{ fontFamily: "'Nunito', sans-serif" }}>
             <h2 className="text-lg font-bold mb-4">Konfirmasi Kehadiran</h2>
             <p className="mb-6">Apakah Anda yakin dengan data kehadiran Anda?</p>
             <div className="flex justify-end gap-3">

@@ -51,6 +51,14 @@ function Search() {
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
+      if (format === 'pdf') {
+        const newTab = window.open();
+        if (newTab) {
+          newTab.location = url;
+        } else {
+          window.open(url, '_blank');
+        }
+      }
       const a = document.createElement('a');
       a.href = url;
       a.download = `sertifikat-${result.id_sertif}.${format}`;
@@ -76,7 +84,7 @@ function Search() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-lg border-0 p-8 text-center relative overflow-hidden">
           {/* Subtle background decoration */}
@@ -145,23 +153,15 @@ function Search() {
                 
                 {/* Tombol Download Sertifikat */}
                 <div className="mt-6 pt-4 border-t">
-                  <h4 className="font-bold mb-3 text-gray-800">Unduh Sertifikat</h4>
-                  <div className="flex gap-2">
+                  <h4 className="font-bold mb-3 text-gray-800">Download disini</h4>
+                  <div className="flex gap-2"> 
                     <button
                       onClick={() => handleDownload('pdf')}
                       disabled={downloading}
                       className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
                     >
                       <FileText className="w-4 h-4" />
-                      {downloading ? 'Mengunduh...' : 'PDF'}
-                    </button>
-                    <button
-                      onClick={() => handleDownload('png')}
-                      disabled={downloading}
-                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
-                    >
-                      <Image className="w-4 h-4" />
-                      {downloading ? 'Mengunduh...' : 'PNG'}
+                      {downloading ? 'Mengunduh...' : 'Unduh Sertifikat'}
                     </button>
                   </div>
                 </div>

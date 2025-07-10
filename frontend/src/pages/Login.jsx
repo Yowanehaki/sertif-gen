@@ -12,7 +12,7 @@ const Login = () => {
   return (
     <div
       className="h-screen flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      style={{ backgroundImage: `url(${backgroundImage})`, fontFamily: "'Nunito', sans-serif" }}
     >
       <style>
         {`
@@ -67,7 +67,7 @@ const Login = () => {
           {/* Footer Text */}
           <div className="text-center mt-8 text-sm text-gray-700">
             <p>
-              Generate Sertifikat dengan gampang.
+              Kelola sertifikat peserta.
             </p>
           </div>
         </div>

@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 const Appreciate = () => {
   useEffect(() => { document.title = 'Graha Karya Informasi'; }, []);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 flex items-center justify-center px-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
       <div className="max-w-md w-full">
         {/* Card container */}
         <div className="bg-white rounded-2xl shadow-lg border-0 p-8 text-center relative overflow-hidden">

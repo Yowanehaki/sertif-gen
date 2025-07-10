@@ -23,7 +23,7 @@ const TabelPeserta = ({
             maxWidth: sidebarVisible ? 'calc(100vw - 320px - 48px)' : '100vw'
           }}
         >
-          <table className="bg-white min-w-[1150px]">
+          <table className="bg-white min-w-[1150px]" style={{ fontFamily: "'Ubuntu', sans-serif" }}>
             <thead className="bg-gradient-to-r from-gray-600 to-gray-600 sticky top-0 z-10">
               <tr>
                 <th className="p-4 text-left">
