@@ -12,6 +12,8 @@ import Appreciate from "./pages/Apresiasi.jsx";
 import ProtectedRoute from "./components/ProtectRoute/ProtectRoute.jsx";
 import LoginProtectRoute from "./components/ProtectRoute/LoginProtectRoute.jsx";
 import Search from "./pages/user/Search.jsx";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -41,6 +43,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/apresiasi" element={<Appreciate />} />
         <Route path="/Search" element={<Search />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </BrowserRouter>
   </StrictMode>
 );

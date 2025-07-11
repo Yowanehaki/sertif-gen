@@ -25,7 +25,7 @@ app.use('/api/excel', excelRoutes);
 
 // Static serve for generated certificates and signatures
 app.use('/generated-certificates', express.static(path.join(__dirname, 'generated-certificates')));
-app.use('/uploads/signatures', express.static(path.join(__dirname, 'uploads/signatures')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => res.send('Backend Sertif Ready Gan!'));
 

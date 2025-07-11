@@ -691,8 +691,8 @@ function Dashboard() {
                     selectedSignature={generateData.selectedSignaturePath}
                     onSignatureSelect={(path) => setGenerateData({ ...generateData, selectedSignaturePath: path })}
                     onSignatureUpload={(file) => setGenerateData({ ...generateData, tandaTangan: file })}
-                    disabled={isGenerating}
-                  />
+                      disabled={isGenerating}
+                    />
                 </div>
                 <div className="flex space-x-3 pt-2">
                   <button type="submit" className={`flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${isGenerating ? 'cursor-wait opacity-75' : ''}`} disabled={isGenerating}>
@@ -856,7 +856,7 @@ function Dashboard() {
                   >
                     Verifikasi
                   </button>
-                  <button 
+                <button
                     type="button" 
                     onClick={() => {
                       setShowVerifModal(false);

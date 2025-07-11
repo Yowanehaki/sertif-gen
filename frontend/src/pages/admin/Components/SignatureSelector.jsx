@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, X, Trash2, Check } from 'lucide-react';
 import { saveSignature, getSavedSignatures, deleteSavedSignature } from '../../../services/dashboard/peserta.service';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// Notifikasi lokal
 
 const SignatureSelector = ({ 
   selectedSignature, 
@@ -14,8 +13,9 @@ const SignatureSelector = ({
   const [uploading, setUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
-  const [customName, setCustomName] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [notif, setNotif] = useState({ message: '', type: '' });
+  const [customName, setCustomName] = useState("");
 
   useEffect(() => {
     loadSavedSignatures();
@@ -34,29 +34,21 @@ const SignatureSelector = ({
   };
 
   const handleFileUpload = async (customName) => {
-    if (!uploadFile) return;
-    
+    if (!uploadFile || !customName) return;
+    setUploading(true);
     try {
-      setUploading(true);
-      const result = await saveSignature(uploadFile, customName);
-      
-      // Add new signature to list
-      setSavedSignatures(prev => [{
-        filename: result.filename,
-        path: result.path,
-        url: `/uploads/signatures/${result.filename}`,
-        createdAt: new Date()
-      }, ...prev]);
-      
-      // Select the newly uploaded signature
-      onSignatureSelect(result.path);
-      
+      const formData = new FormData();
+      formData.append('signature', uploadFile);
+      formData.append('customName', customName);
+      await saveSignature(formData, true); // true: FormData sudah siap
       setShowUploadModal(false);
       setUploadFile(null);
       setCustomName("");
+      await loadSavedSignatures();
+      setNotif({ message: 'Tanda tangan berhasil diupload!', type: 'success' });
+      setTimeout(() => setNotif({ message: '', type: '' }), 2500);
     } catch (error) {
-      console.error('Error uploading signature:', error);
-      alert('Gagal mengupload tanda tangan: ' + error.message);
+      alert('Gagal upload tanda tangan: ' + (error.response?.data?.message || error.message));
     } finally {
       setUploading(false);
     }
@@ -73,9 +65,11 @@ const SignatureSelector = ({
       await deleteSavedSignature(filename);
       setSavedSignatures(prev => prev.filter(sig => sig.filename !== filename));
       onSignatureSelect(null);
-      toast.success('Tanda tangan berhasil dihapus!');
+      setNotif({ message: 'Tanda tangan berhasil dihapus!', type: 'success' });
+      setTimeout(() => setNotif({ message: '', type: '' }), 2500);
     } catch (error) {
-      toast.error('Gagal menghapus tanda tangan: ' + (error.response?.data?.message || error.message));
+      setNotif({ message: 'Gagal menghapus tanda tangan: ' + (error.response?.data?.message || error.message), type: 'error' });
+      setTimeout(() => setNotif({ message: '', type: '' }), 2500);
     } finally {
       setLoading(false);
       setShowDeleteModal(false);
@@ -87,19 +81,6 @@ const SignatureSelector = ({
       {/* Selected Signature Preview */}
       {selectedSignature && (
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-2">
-          {(() => {
-            // Normalisasi path agar selalu pakai slash dan diawali /
-            let normalizedPath = selectedSignature.replace(/\\/g, '/').replace(/\+/g, '/');
-            if (!normalizedPath.startsWith('/')) normalizedPath = '/' + normalizedPath;
-            return (
-              <img
-                src={`http://localhost:5000${normalizedPath}`}
-                alt="Selected Signature"
-                className="h-12 border rounded shadow"
-                style={{ maxWidth: 120, objectFit: 'contain' }}
-              />
-            );
-          })()}
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-700">{(() => {
               // Tampilkan hanya nama file
@@ -126,6 +107,13 @@ const SignatureSelector = ({
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+      {/* Notifikasi lokal */}
+      {notif.message && (
+        <div className={`mt-2 px-4 py-2 rounded text-sm font-medium ${notif.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+             style={{ maxWidth: 400 }}>
+          {notif.message}
         </div>
       )}
       {/* Modal Konfirmasi Hapus */}
@@ -221,7 +209,7 @@ const SignatureSelector = ({
                   value={customName}
                   onChange={e => setCustomName(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  placeholder="Contoh: ttd_trainer1"
+                  placeholder="Contoh: ttd_trainerA"
                   maxLength={40}
                 />
               </div>
@@ -256,7 +244,7 @@ const SignatureSelector = ({
                 </button>
                 <button
                   onClick={() => handleFileUpload(customName)}
-                  disabled={!uploadFile || uploading}
+                  disabled={!uploadFile || !customName || uploading}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                   {uploading ? 'Mengupload...' : 'Upload'}
@@ -266,7 +254,6 @@ const SignatureSelector = ({
           </div>
         </div>
       )}
-      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </div>
   );
 };

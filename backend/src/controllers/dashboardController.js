@@ -131,34 +131,34 @@ exports.update = async (req, res) => {
     // Update batch & no_urut jika batch atau aktivitas diubah
     if (batch || aktivitas) {
       try {
-        // Ambil kode aktivitas dari tabel Aktivitas
-        const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas || peserta.aktivitas } });
-        const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
-        const tahun = peserta.tgl_submit.getFullYear().toString();
+      // Ambil kode aktivitas dari tabel Aktivitas
+      const aktivitasObj = await prisma.aktivitas.findFirst({ where: { nama: aktivitas || peserta.aktivitas } });
+      const kode = aktivitasObj ? aktivitasObj.kode : 'UNK';
+      const tahun = peserta.tgl_submit.getFullYear().toString();
         
         // Cari no_urut terkecil yang belum dipakai untuk kombinasi kode, batch, tahun
         const existing = await prisma.kodePerusahaan.findMany({
-          where: { 
-            kode, 
-            batch: batch || peserta.kodePerusahaan.batch, 
+        where: {
+          kode,
+          batch: batch || peserta.kodePerusahaan.batch,
             tahun: parseInt(tahun),
             id_sertif: { not: id_sertif } // Exclude current record
           },
           select: { no_urut: true }
-        });
+      });
         const existingNoUrut = new Set(existing.map(e => e.no_urut));
         let no_urut = 1;
         while (existingNoUrut.has(no_urut)) no_urut++;
         
-        await prisma.kodePerusahaan.update({
-          where: { id_sertif },
-          data: {
-            batch: batch || peserta.kodePerusahaan.batch,
-            kode,
+      await prisma.kodePerusahaan.update({
+        where: { id_sertif },
+        data: {
+          batch: batch || peserta.kodePerusahaan.batch,
+          kode,
             tahun: parseInt(tahun),
-            no_urut
-          }
-        });
+          no_urut
+        }
+      });
       } catch (error) {
         console.error('Error updating kodePerusahaan:', error);
         // Continue without updating kodePerusahaan if there's an error

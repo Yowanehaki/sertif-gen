@@ -45,9 +45,14 @@ export const uploadTandaTanganPeserta = async (id_sertif, file) => {
 };
 
 // Save signature permanently
-export const saveSignature = async (file) => {
-  const formData = new FormData();
-  formData.append('signature', file);
+export const saveSignature = async (fileOrFormData, isFormData = false) => {
+  let formData;
+  if (isFormData) {
+    formData = fileOrFormData;
+  } else {
+    formData = new FormData();
+    formData.append('signature', fileOrFormData);
+  }
   const { data } = await api.post('/dashboard/save-signature', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
