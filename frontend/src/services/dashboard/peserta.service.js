@@ -42,4 +42,26 @@ export const uploadTandaTanganPeserta = async (id_sertif, file) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
+};
+
+// Save signature permanently
+export const saveSignature = async (file) => {
+  const formData = new FormData();
+  formData.append('signature', file);
+  const { data } = await api.post('/dashboard/save-signature', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
+// Get list of saved signatures
+export const getSavedSignatures = async () => {
+  const { data } = await api.get('/dashboard/saved-signatures');
+  return data;
+};
+
+// Delete saved signature
+export const deleteSavedSignature = async (filename) => {
+  const { data } = await api.delete(`/dashboard/saved-signatures/${filename}`);
+  return data;
 }; 

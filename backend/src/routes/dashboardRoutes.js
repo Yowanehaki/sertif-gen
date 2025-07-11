@@ -225,6 +225,44 @@ router.post('/:id_sertif/generate-png', async (req, res) => {
   }
 });
 
+// Endpoint untuk mendapatkan daftar tanda tangan yang tersimpan
+router.get('/saved-signatures', async (req, res) => {
+  try {
+    const signaturesDir = path.join(__dirname, '../../uploads/signatures');
+    if (!fs.existsSync(signaturesDir)) {
+      return res.json({ signatures: [] });
+    }
+    const files = fs.readdirSync(signaturesDir);
+    const signatures = files
+      .filter(file => /\.(png|jpg|jpeg|gif)$/i.test(file))
+      .map(file => ({
+        filename: file,
+        path: `uploads/signatures/${file}`,
+        url: `/uploads/signatures/${file}`,
+        createdAt: fs.statSync(path.join(signaturesDir, file)).mtime
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt); // Sort by newest first
+    res.json({ signatures });
+  } catch (err) {
+    res.status(500).json({ message: 'Gagal mengambil daftar tanda tangan', error: err.message });
+  }
+});
+
+// Endpoint untuk menghapus tanda tangan yang tersimpan
+router.delete('/saved-signatures/:filename', async (req, res) => {
+  const { filename } = req.params;
+  try {
+    const filePath = path.join(__dirname, '../../uploads/signatures', filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'File tidak ditemukan' });
+    }
+    fs.unlinkSync(filePath);
+    res.json({ success: true, message: 'Tanda tangan berhasil dihapus' });
+  } catch (err) {
+    res.status(500).json({ message: 'Gagal menghapus tanda tangan', error: err.message });
+  }
+});
+
 // Protect semua route dashboard - hanya admin yang bisa akses
 router.use(accessValidation);
 
@@ -263,6 +301,23 @@ router.post('/:id_sertif/upload-tandatangan', upload.single('tandatangan'), asyn
   }
 });
 
+// Endpoint untuk menyimpan tanda tangan secara permanen
+router.post('/save-signature', upload.single('signature'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'File tidak ditemukan' });
+  try {
+    const signaturesDir = path.join(__dirname, '../../uploads/signatures');
+    if (!fs.existsSync(signaturesDir)) fs.mkdirSync(signaturesDir, { recursive: true });
+    let fileName = req.body.customName || `signature_${Date.now()}_${path.basename(req.file.originalname)}`;
+    if (!fileName.endsWith('.png')) fileName += '.png';
+    const newPath = path.join(signaturesDir, fileName);
+    fs.renameSync(req.file.path, newPath);
+    const relativePath = path.relative(path.join(__dirname, '../../'), newPath);
+    res.json({ success: true, path: relativePath, filename: fileName, message: 'Tanda tangan berhasil disimpan' });
+  } catch (err) {
+    res.status(500).json({ message: 'Gagal menyimpan tanda tangan', error: err.message });
+  }
+});
+
 function generateIdWithDigits(minDigits = 2, length = 8) {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
   const nanoidCustom = customAlphabet(alphabet, length);
@@ -273,26 +328,6 @@ function generateIdWithDigits(minDigits = 2, length = 8) {
   return id;
 }
 
-// Auto cleanup: hapus file tanda tangan di uploads/tandatangan yang lebih dari 1 menit
-setInterval(() => {
-  const dir = path.join(__dirname, '../../uploads/tandatangan');
-  if (fs.existsSync(dir)) {
-    const files = fs.readdirSync(dir);
-    const now = Date.now();
-    files.forEach(file => {
-      const filePath = path.join(dir, file);
-      try {
-        const stats = fs.statSync(filePath);
-        // Jika file lebih dari 1 menit (60.000 ms)
-        if (now - stats.mtime.getTime() > 60 * 1000) {
-          fs.unlinkSync(filePath);
-          console.log('Auto-cleanup: deleted', filePath);
-        }
-      } catch (e) {
-        console.error('Auto-cleanup error:', e);
-      }
-    });
-  }
-}, 30 * 1000); // Cek setiap 30 detik
+// Note: Auto-cleanup removed to preserve signatures permanently // Cek setiap 30 detik
 
 module.exports = router; 

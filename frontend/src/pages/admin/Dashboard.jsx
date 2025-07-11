@@ -11,6 +11,7 @@ import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta, uploadTandaTanganPeserta } from '../../services/dashboard/peserta.service';
+import SignatureSelector from './Components/SignatureSelector';
 import { getAktivitas, getAktivitasAktif } from '../../services/dashboard/aktivitas.service.js';
 import { getBatchList, getBatchAktif } from '../../services/dashboard/batch.service';
 import { toast, ToastContainer } from 'react-toastify';
@@ -31,7 +32,8 @@ function Dashboard() {
     namaPenguji: '',
     jabatanPenguji: '',
     tanggalTerbit: '',
-    tandaTangan: null
+    tandaTangan: null,
+    selectedSignaturePath: null
   });
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -51,7 +53,8 @@ function Dashboard() {
     namaPenguji: '',
     jabatanPenguji: '',
     tanggalTerbit: '',
-    tandaTangan: null
+    tandaTangan: null,
+    selectedSignaturePath: null
   });
 
   // Ambil data peserta & aktivitas dari backend saat mount
@@ -201,6 +204,8 @@ function Dashboard() {
       if (verifData.tandaTangan) {
         const uploadRes = await uploadTandaTanganPeserta(verifId, verifData.tandaTangan);
         ttdPath = uploadRes.path;
+      } else if (verifData.selectedSignaturePath) {
+        ttdPath = verifData.selectedSignaturePath;
       }
       
       await updatePeserta(verifId, { 
@@ -221,7 +226,8 @@ function Dashboard() {
       namaPenguji: '',
       jabatanPenguji: '',
       tanggalTerbit: '',
-      tandaTangan: null
+      tandaTangan: null,
+      selectedSignaturePath: null
     });
     setTimeout(() => setNotif(''), 2000);
   };
@@ -256,6 +262,8 @@ function Dashboard() {
       if (verifData.tandaTangan) {
         const uploadRes = await uploadTandaTanganPeserta(unverifiedIds[0], verifData.tandaTangan);
         ttdPath = uploadRes.path;
+      } else if (verifData.selectedSignaturePath) {
+        ttdPath = verifData.selectedSignaturePath;
       }
       
       // Update semua peserta yang belum diverifikasi
@@ -279,7 +287,8 @@ function Dashboard() {
         namaPenguji: '',
         jabatanPenguji: '',
         tanggalTerbit: '',
-        tandaTangan: null
+        tandaTangan: null,
+        selectedSignaturePath: null
       });
     } catch (error) {
       setNotif('Gagal verifikasi peserta: ' + error.message);
@@ -324,6 +333,8 @@ function Dashboard() {
       if (generateData.tandaTangan) {
         const uploadRes = await uploadTandaTanganPeserta(selected[0], generateData.tandaTangan);
         ttdPath = uploadRes.path;
+      } else if (generateData.selectedSignaturePath) {
+        ttdPath = generateData.selectedSignaturePath;
       }
       await updatePeserta(selected[0], {
         nama_penguji: generateData.namaPenguji,
@@ -364,6 +375,8 @@ function Dashboard() {
         // Upload sekali, lalu gunakan path yang sama untuk semua peserta
         const uploadRes = await uploadTandaTanganPeserta(selected[0], generateData.tandaTangan);
         ttdPath = uploadRes.path;
+      } else if (generateData.selectedSignaturePath) {
+        ttdPath = generateData.selectedSignaturePath;
       }
       // Update semua peserta terpilih
       await Promise.all(selected.map(id => updatePeserta(id, {
@@ -673,37 +686,13 @@ function Dashboard() {
                   <input type="date" className="w-full border rounded-lg px-3 py-2" value={generateData.tanggalTerbit} onChange={e => setGenerateData({...generateData, tanggalTerbit: e.target.value})} required disabled={isGenerating} />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="w-full border rounded-lg px-3 py-2 bg-white"
-                      onChange={e => setGenerateData({ ...generateData, tandaTangan: e.target.files[0] })}
-                      disabled={isGenerating}
-                    />
-                    {generateData.tandaTangan && (
-                      <button
-                        type="button"
-                        className="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 border border-red-200 rounded"
-                        onClick={() => setGenerateData({ ...generateData, tandaTangan: null })}
-                        disabled={isGenerating}
-                      >
-                        Hapus
-                      </button>
-                    )}
-                  </div>
-                  {generateData.tandaTangan && (
-                    <div className="mt-2 flex items-center gap-3">
-                      <span className="text-xs text-gray-600">File: {generateData.tandaTangan.name}</span>
-                      <img
-                        src={URL.createObjectURL(generateData.tandaTangan)}
-                        alt="Preview Tanda Tangan"
-                        className="h-12 border rounded shadow"
-                        style={{ maxWidth: 120, objectFit: 'contain' }}
-                      />
-                    </div>
-                  )}
+                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan</label>
+                  <SignatureSelector
+                    selectedSignature={generateData.selectedSignaturePath}
+                    onSignatureSelect={(path) => setGenerateData({ ...generateData, selectedSignaturePath: path })}
+                    onSignatureUpload={(file) => setGenerateData({ ...generateData, tandaTangan: file })}
+                    disabled={isGenerating}
+                  />
                 </div>
                 <div className="flex space-x-3 pt-2">
                   <button type="submit" className={`flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${isGenerating ? 'cursor-wait opacity-75' : ''}`} disabled={isGenerating}>
@@ -767,7 +756,7 @@ function Dashboard() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
-                  {selectedBulkVerif.length > 0 ? 'Verifikasi Bulk' : 'Verifikasi Peserta'}
+                  {selectedBulkVerif.length > 0 ? 'Verifikasi' : 'Verifikasi Peserta'}
                 </h3>
                 <button
                   onClick={() => {
@@ -826,35 +815,13 @@ function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan (upload)</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="w-full border rounded-lg px-3 py-2 bg-white"
-                      onChange={e => setVerifData({ ...verifData, tandaTangan: e.target.files[0] })}
-                    />
-                    {verifData.tandaTangan && (
-                <button
-                        type="button"
-                        className="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 border border-red-200 rounded"
-                        onClick={() => setVerifData({ ...verifData, tandaTangan: null })}
-                      >
-                        Hapus
-                      </button>
-                    )}
-                  </div>
-                  {verifData.tandaTangan && (
-                    <div className="mt-2 flex items-center gap-3">
-                      <span className="text-xs text-gray-600">File: {verifData.tandaTangan.name}</span>
-                      <img
-                        src={URL.createObjectURL(verifData.tandaTangan)}
-                        alt="Preview Tanda Tangan"
-                        className="h-12 border rounded shadow"
-                        style={{ maxWidth: 120, objectFit: 'contain' }}
-                      />
-                    </div>
-                  )}
+                  <label className="block text-gray-700 font-medium mb-1">Tanda Tangan</label>
+                  <SignatureSelector
+                    selectedSignature={verifData.selectedSignaturePath}
+                    onSignatureSelect={(path) => setVerifData({ ...verifData, selectedSignaturePath: path })}
+                    onSignatureUpload={(file) => setVerifData({ ...verifData, tandaTangan: file })}
+                    showPreview={false}
+                  />
                 </div>
                 
                 <div className="mb-4 text-gray-700">

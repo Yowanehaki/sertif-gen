@@ -8,6 +8,7 @@ import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx'
 import { getPeserta } from '../../services/dashboard/peserta.service';
 import { getAktivitas, getAktivitasAktif, updateAktivitas, deleteAktivitas } from '../../services/dashboard/aktivitas.service.js';
 import { getBatchList, getBatchAktif, deleteBatch } from '../../services/dashboard/batch.service';
+import SignatureSelector from './Components/SignatureSelector';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
