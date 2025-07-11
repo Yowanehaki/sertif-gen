@@ -1,6 +1,25 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru = [], batchList = [], aktivitasAktif = [], batchAktif = [], visible = true }) {
+  const location = useLocation();
+  
+  // Determine current tab based on location
+  const getCurrentTab = () => {
+    switch (location.pathname) {
+      case '/dashboard':
+        return 'dashboard';
+      case '/Uploadpeserta':
+        return 'upload';
+      case '/EditFormPage':
+        return 'aktivitas';
+      default:
+        return tab || 'dashboard';
+    }
+  };
+
+  const activeTab = getCurrentTab();
+
   return (
     <aside
       className={
@@ -13,18 +32,19 @@ function Sidebar({ tab, setTab, peserta, aktivitas, sidebarItems, aktivitasBaru 
         {sidebarItems.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <Link
               key={item.id}
+              to={item.path || '/dashboard'}
               onClick={() => setTab(item.id)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
-                tab === item.id
+                activeTab === item.id
                   ? 'bg-gradient-to-r from-red-600 to-blue-600 text-white shadow-lg'
                   : 'text-gray-700 hover:bg-white/80 hover:shadow-md'
               }`}
             >
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

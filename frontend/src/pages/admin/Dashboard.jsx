@@ -11,8 +11,8 @@ import EditPeserta from './Components/EditPeserta.jsx';
 import KelolaBatch from './Components/KelolaBatch.jsx';
 import TambahAktivitasBaruModal from './Components/TambahAktivitasBaruModal.jsx';
 import { getPeserta, updatePeserta, bulkDeletePeserta, uploadTandaTanganPeserta } from '../../services/dashboard/peserta.service';
-import { getAktivitas, updateKodePerusahaan, getAktivitasAktif } from '../../services/dashboard/aktivitas.service.js';
-import { getBatchList, deleteBatch, getBatchAktif } from '../../services/dashboard/batch.service';
+import { getAktivitas, getAktivitasAktif } from '../../services/dashboard/aktivitas.service.js';
+import { getBatchList, getBatchAktif } from '../../services/dashboard/batch.service';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -38,13 +38,9 @@ function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notif, setNotif] = useState('');
   const [batchList, setBatchList] = useState([]);
-  const [showDeleteBatch, setShowDeleteBatch] = useState(false);
-  const [currentDeleteBatchId, setCurrentDeleteBatchId] = useState(null);
-  const [aktivitasBaru, setAktivitasBaru] = useState([]);
-  const [showTambahAktivitas, setShowTambahAktivitas] = useState(false);
+
   const [downloadLinks, setDownloadLinks] = useState(null);
   const downloadRef = useRef(null);
-  const [pendingUpload, setPendingUpload] = useState(null);
   const [aktivitasAktif, setAktivitasAktif] = useState([]);
   const [batchAktif, setBatchAktif] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -71,10 +67,7 @@ function Dashboard() {
     document.title = 'Dashboard';
   }, []);
 
-  // Tampilkan modal tambah aktivitas baru setiap kali aktivitasBaru berubah
-  useEffect(() => {
-    if (aktivitasBaru.length > 0) setShowTambahAktivitas(true);
-  }, [aktivitasBaru]);
+
 
   const refreshPeserta = async () => {
     const data = await getPeserta();
@@ -294,37 +287,8 @@ function Dashboard() {
     setTimeout(() => setNotif(''), 3000);
   };
 
-  const handleOpenDeleteBatch = (id) => {
-    setCurrentDeleteBatchId(id);
-    setShowDeleteBatch(true);
-  };
-
-  const handleDeleteBatch = async () => {
-    await deleteBatch(currentDeleteBatchId);
-    await refreshBatchList();
-    setShowDeleteBatch(false);
-    setNotif('Batch berhasil dihapus');
-    setTimeout(() => setNotif(''), 2000);
-  };
-
-  const handleExcelPreviewConfirm = ({ file, preview }) => {
-    setPendingUpload({ file, preview });
-
-    // Deteksi aktivitas baru dari preview Excel
-    const header = preview[0];
-    const aktivitasIdx = header.findIndex(h => h.toLowerCase().includes('aktivitas'));
-    const aktivitasDiExcel = preview.slice(1).map(row => row[aktivitasIdx]);
-    const aktivitasUnik = [...new Set(aktivitasDiExcel)].filter(Boolean);
-    const aktivitasSudahAda = aktivitas.map(a => a.nama);
-    const aktivitasBaruList = aktivitasUnik.filter(a => !aktivitasSudahAda.includes(a));
-    setAktivitasBaru(aktivitasBaruList);
-
-    if (aktivitasBaruList.length === 0) {
-      handleFinalUpload(file);
-      setPendingUpload(null);
-    } else {
-      setShowTambahAktivitas(true);
-    }
+  const handleExcelPreviewConfirm = ({ file }) => {
+    handleFinalUpload(file);
   };
 
   const handleFinalUpload = async (file, aktivitasKode) => {
@@ -350,31 +314,7 @@ function Dashboard() {
     }
   };
 
-  const handleTambahAktivitas = async (data) => {
-    try {
-      await updateKodePerusahaan(data);
-      setShowTambahAktivitas(false);
-      setAktivitasBaru([]);
-      await refreshAktivitas();
-      await refreshPeserta();
-      setNotif('Aktivitas berhasil ditambahkan dan kode perusahaan diupdate');
-      setTimeout(() => setNotif(''), 2000);
-      if (pendingUpload && pendingUpload.file) {
-        await handleFinalUpload(pendingUpload.file, data);
-        setPendingUpload(null);
-      }
-    } catch (error) {
-      console.error('Error adding activities:', error);
-      setNotif('Gagal menambahkan aktivitas: ' + error.message);
-      setTimeout(() => setNotif(''), 3000);
-    }
-  };
 
-  const handleCancelTambahAktivitas = () => {
-    setShowTambahAktivitas(false);
-    setAktivitasBaru([]);
-    setPendingUpload(null);
-  };
 
   // Fungsi generate single
   const handleGenerateSingle = async () => {
@@ -496,9 +436,9 @@ function Dashboard() {
   };
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'upload', label: 'Upload Excel', icon: Upload },
-    { id: 'aktivitas', label: 'Edit Form', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'upload', label: 'Upload Excel', icon: Upload, path: '/Uploadpeserta' },
+    { id: 'aktivitas', label: 'Edit Form', icon: Settings, path: '/EditFormPage' },
   ];
 
   return (
@@ -555,7 +495,6 @@ function Dashboard() {
             peserta={peserta}
             aktivitas={aktivitas}
             sidebarItems={sidebarItems}
-            aktivitasBaru={aktivitasBaru}
             batchList={batchList}
             aktivitasAktif={aktivitasAktif}
             batchAktif={batchAktif}
@@ -672,7 +611,6 @@ function Dashboard() {
                   setEditAktivitas={setEditAktivitas}
                   setTab={setTab}
                   setNotif={setNotif}
-                  aktivitasBaru={aktivitasBaru}
                   refreshAktivitasAktif={refreshAktivitasAktif}
                 />
               </div>
@@ -680,7 +618,6 @@ function Dashboard() {
                 <KelolaBatch
                   setNotif={setNotif}
                   batchList={batchList}
-                  onOpenDeleteBatch={handleOpenDeleteBatch}
                   refreshBatchList={refreshBatchList}
                   refreshBatchAktif={refreshBatchAktif}
                 />
@@ -821,42 +758,7 @@ function Dashboard() {
         batchList={batchList}
       />
 
-      {/* Modal Hapus Batch */}
-      {showDeleteBatch && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Hapus Batch</h3>
-                <button onClick={() => setShowDeleteBatch(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trash2 className="w-8 h-8 text-red-600" />
-                </div>
-                <p className="text-gray-600">
-                  Yakin ingin menghapus batch <span className="font-semibold text-gray-800">{batchList.find(b => b.id === currentDeleteBatchId)?.nama}</span>?
-                </p>
-                <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
-              </div>
-              <div className="flex space-x-3">
-                <button onClick={handleDeleteBatch} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Hapus</button>
-                <button onClick={() => setShowDeleteBatch(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Modal Tambah Aktivitas Baru */}
-      <TambahAktivitasBaruModal
-        show={showTambahAktivitas}
-        aktivitasBaru={aktivitasBaru}
-        onClose={handleCancelTambahAktivitas}
-        onSubmit={handleTambahAktivitas}
-      />
 
       {/* Modal Konfirmasi Verifikasi */}
       {showVerifModal && (

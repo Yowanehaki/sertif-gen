@@ -1,4 +1,5 @@
 import axios from "axios";
+import { setCookie } from "../../utils/cookieUtils";
 
 const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -22,7 +23,7 @@ export const AdminAuthentication = async (event) => {
 
     if (res.status === 200) {
       alert(`${res.data.message || 'Login Berhasil'}`);
-      localStorage.setItem("token", res.data.token);
+      setCookie("token", res.data.token, 1); // Store token in cookie for 1 day
       window.location.href = "/dashboard";
     }
   } catch (error) {

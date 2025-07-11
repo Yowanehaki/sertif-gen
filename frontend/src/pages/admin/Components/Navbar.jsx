@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Users, Home, Upload, Settings, X, LogOut } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import logo from '../../../assets/logo.png'
 import { getFormUserStatus, setFormUserStatus } from '../../../services/dashboard/api';
 import { LogoutHandler } from "../../../services/adminAuth/adminLogout.service";
 
 export default function NavigationMenu({ currentTab, onTabChange }) {
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -12,10 +14,26 @@ export default function NavigationMenu({ currentTab, onTabChange }) {
   const [loadingFormUser, setLoadingFormUser] = useState(false);
   const [notif, setNotif] = useState('');
 
+  // Determine current tab based on location
+  const getCurrentTab = () => {
+    switch (location.pathname) {
+      case '/dashboard':
+        return 'dashboard';
+      case '/Uploadpeserta':
+        return 'upload';
+      case '/EditFormPage':
+        return 'aktivitas';
+      default:
+        return currentTab || 'dashboard';
+    }
+  };
+
+  const activeTab = getCurrentTab();
+
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'upload', label: 'Upload Excel', icon: Upload },
-    { id: 'aktivitas', label: 'Kelola Aktivitas', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'upload', label: 'Upload Excel', icon: Upload, path: '/Uploadpeserta' },
+    { id: 'aktivitas', label: 'Edit Form', icon: Settings, path: '/Editform' },
   ];
 
   // Scroll effect for navbar
@@ -129,21 +147,22 @@ export default function NavigationMenu({ currentTab, onTabChange }) {
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <button
+                    <Link
                       key={item.id}
+                      to={item.path}
                       onClick={() => {
                         onTabChange?.(item.id);
                         setShowMobileMenu(false);
                       }}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                        currentTab === item.id
+                        activeTab === item.id
                           ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
                       <span>{item.label}</span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>

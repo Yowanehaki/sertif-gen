@@ -1,65 +1,12 @@
 import React, { useState } from 'react';
 import { Settings, Edit, Trash2, Plus, X } from 'lucide-react';
-import { createAktivitas, getAktivitas, updateAktivitas, deleteAktivitas } from '../../../services/dashboard/aktivitas.service.js';
+import { createAktivitas, getAktivitas, updateAktivitas } from '../../../services/dashboard/aktivitas.service.js';
 import { Switch } from '@headlessui/react';
 
-const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif, aktivitasBaru = [], refreshAktivitasAktif }) => {
-  const [showEdit, setShowEdit] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-  const [currentEditIdx, setCurrentEditIdx] = useState(null);
-  const [currentDeleteIdx, setCurrentDeleteIdx] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [editKode, setEditKode] = useState('');
+const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, setNotif, aktivitasBaru = [], refreshAktivitasAktif, onOpenEdit, onOpenDelete }) => {
   const [newKode, setNewKode] = useState('');
   const [searchAktivitas, setSearchAktivitas] = useState('');
 
-  const openEdit = (idx) => {
-    setCurrentEditIdx(idx);
-    setEditValue(aktivitas[idx].nama);
-    setEditKode(aktivitas[idx].kode || '');
-    setShowEdit(true);
-  };
-  const openDelete = (idx) => {
-    setCurrentDeleteIdx(idx);
-    setShowDelete(true);
-  };
-  const handleEditSave = async (e) => {
-    e.preventDefault();
-    if (editValue) {
-      const id = aktivitas[currentEditIdx].id;
-      try {
-        await updateAktivitas({ id, nama: editValue, kode: editKode });
-        const data = await getAktivitas();
-        setAktivitas(data);
-        if (refreshAktivitasAktif) await refreshAktivitasAktif();
-      } catch {
-        if (setNotif) {
-          setNotif('Gagal update aktivitas (mungkin nama/kode sudah ada)');
-          setTimeout(() => setNotif(''), 2000);
-        }
-      }
-    }
-    setShowEdit(false);
-  };
-  const handleDeleteConfirm = async () => {
-    const id = aktivitas[currentDeleteIdx].id;
-    try {
-      await deleteAktivitas(id);
-      const data = await getAktivitas();
-      setAktivitas(data);
-      if (refreshAktivitasAktif) await refreshAktivitasAktif();
-      setShowDelete(false);
-      if (setNotif) {
-        setNotif('Aktivitas berhasil dihapus');
-        setTimeout(() => setNotif(''), 2000);
-      }
-    } catch {
-      if (setNotif) {
-        setNotif('Gagal menghapus aktivitas');
-        setTimeout(() => setNotif(''), 2000);
-      }
-    }
-  };
   const handleAdd = async (e) => {
     e.preventDefault();
     if(editAktivitas) {
@@ -143,10 +90,10 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
                             className={`${isBaru ? 'translate-x-1' : (a.aktif ? 'translate-x-6' : 'translate-x-1')} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                           />
                         </Switch>
-                        <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => openEdit(idx)}>
+                        <button type="button" className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200" onClick={() => onOpenEdit(idx)}>
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button type="button" onClick={() => openDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
+                        <button type="button" onClick={() => onOpenDelete(idx)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -182,62 +129,7 @@ const EditForm = ({ aktivitas, setAktivitas, editAktivitas, setEditAktivitas, se
           </div>
         </div>
         {/* Modal Edit Aktivitas */}
-        {showEdit && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-800">Edit Aktivitas</h3>
-                  <button onClick={() => setShowEdit(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-                <form onSubmit={handleEditSave} className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">Nama Aktivitas</label>
-                    <input type="text" className="w-full border rounded-lg px-3 py-2" value={editValue} onChange={e => setEditValue(e.target.value)} required />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">Kode Aktivitas</label>
-                    <input type="text" className="w-full border rounded-lg px-3 py-2" value={editKode} onChange={e => setEditKode(e.target.value)} required />
-                  </div>
-                  <div className="flex space-x-3 pt-2">
-                    <button type="submit" className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Simpan</button>
-                    <button type="button" onClick={() => setShowEdit(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Modal Hapus Aktivitas */}
-        {showDelete && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-white/20">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-800">Hapus Aktivitas</h3>
-                  <button onClick={() => setShowDelete(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Trash2 className="w-8 h-8 text-red-600" />
-                  </div>
-                  <p className="text-gray-600">
-                    Yakin ingin menghapus aktivitas <span className="font-semibold text-gray-800">{aktivitas[currentDeleteIdx]?.nama}</span>?
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
-                </div>
-                <div className="flex space-x-3">
-                  <button onClick={handleDeleteConfirm} className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">Hapus</button>
-                  <button onClick={() => setShowDelete(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-medium transition-all duration-200">Batal</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

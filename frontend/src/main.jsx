@@ -6,8 +6,11 @@ import "./index.css";
 import FormUser from "./pages/FormUser.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
+import UploadPeserta from "./pages/admin/UploadPeserta.jsx";
+import EditFormPage from "./pages/admin/EditFormPage.jsx";
 import Appreciate from "./pages/Apresiasi.jsx";
 import ProtectedRoute from "./components/ProtectRoute/ProtectRoute.jsx";
+import LoginProtectRoute from "./components/ProtectRoute/LoginProtectRoute.jsx";
 import Search from "./pages/user/Search.jsx";
 
 createRoot(document.getElementById("root")).render(
@@ -15,10 +18,24 @@ createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<FormUser />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={
+          <LoginProtectRoute>
+            <Login />
+          </LoginProtectRoute>
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/Uploadpeserta" element={
+          <ProtectedRoute>
+            <UploadPeserta />
+          </ProtectedRoute>
+        } />
+        <Route path="/EditFormPage" element={
+          <ProtectedRoute>
+            <EditFormPage />
           </ProtectedRoute>
         } />
         <Route path="/apresiasi" element={<Appreciate />} />

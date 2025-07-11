@@ -1,4 +1,6 @@
+import { removeCookie } from "../../utils/cookieUtils";
+
 export const LogoutHandler = async () => {
-    localStorage.removeItem("token");
+    removeCookie("token");
     window.location.href = "/login";
   };

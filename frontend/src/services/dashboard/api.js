@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCookie } from '../../utils/cookieUtils';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL || 'http://localhost:5000',
@@ -6,7 +7,7 @@ const api = axios.create({
 
 // Tambahkan interceptor untuk Authorization
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = getCookie('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

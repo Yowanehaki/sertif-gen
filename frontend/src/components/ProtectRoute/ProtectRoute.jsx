@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { isTokenValid } from "../../services/adminAuth/tokenValidation.service";
+import { getCookie } from "../../utils/cookieUtils";
 
 const ProtectedRoute = ({ children }) => {
   const [_, setRerender] = useState(0);
@@ -12,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const token = localStorage.getItem("token");
+  const token = getCookie("token");
 
   if (!token || !isTokenValid()) {
     return <Navigate to="/login" replace />;
