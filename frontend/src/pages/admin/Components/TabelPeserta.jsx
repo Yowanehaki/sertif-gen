@@ -23,7 +23,7 @@ const TabelPeserta = ({
             maxWidth: sidebarVisible ? 'calc(100vw - 320px - 48px)' : '100vw'
           }}
         >
-          <table className="bg-white min-w-[1150px]" style={{ fontFamily: "'Ubuntu', sans-serif" }}>
+          <table className="bg-white min-w-[1150px]" style={{ fontFamily: "'Roboto', sans-serif" }}>
             <thead className="bg-gradient-to-r from-gray-600 to-gray-600 sticky top-0 z-10">
               <tr>
                 <th className="p-4 text-left">
@@ -90,7 +90,7 @@ const TabelPeserta = ({
                         {kodePerusahaanLengkap === 'Kode belum tersedia' ? (
                           <span className="text-orange-600 font-medium">Kode belum tersedia</span>
                         ) : (
-                          <span className="font-mono text-xs">{kodePerusahaanLengkap}</span>
+                          <span className="font-mono text-sm">{kodePerusahaanLengkap}</span>
                         )}
                       </div>
                     </td>

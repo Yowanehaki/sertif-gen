@@ -11,7 +11,7 @@ function FormUser({
   batchList = []
 }) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-8" style={{ fontFamily: "'Nunito', sans-serif" }}>
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8" style={{ fontFamily: "'Nunito', sans-serif" }}>
       {/* Nama Lengkap */}
       <div className="group">
         <label htmlFor="fullName" className="flex items-center text-sm md:text-base font-bold text-gray-700 mb-3">

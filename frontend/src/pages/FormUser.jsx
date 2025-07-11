@@ -172,7 +172,7 @@ function FormUser() {
         <div className="bg-blue-100 text-white px-4 py-7 md:px-8 md:py-4">
           <div className="flex items-center gap-4 md:gap-6">
             <img src={logo} alt="Logo" className="w-16 h-12 md:w-40 md:h-28 object-contain flex-shrink-0" />
-            <div className="flex-1">
+            <div className="flex-1" style={{ fontFamily: "'PT Sans', sans-serif" }}>
               <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-black">
                 Form Kehadiran
               </h1>
@@ -204,17 +204,17 @@ function FormUser() {
       {/* Modal Konfirmasi */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full" style={{ fontFamily: "'Nunito', sans-serif" }}>
-            <h2 className="text-lg font-bold mb-4">Konfirmasi Kehadiran</h2>
-            <p className="mb-6">Apakah Anda yakin dengan data kehadiran Anda?</p>
-            <div className="flex justify-end gap-3">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-xs sm:max-w-sm w-full mx-4" style={{ fontFamily: "'Nunito', sans-serif" }}>
+            <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Konfirmasi Kehadiran</h2>
+            <p className="mb-4 sm:mb-6 text-sm sm:text-base">Apakah Anda yakin dengan data kehadiran Anda?</p>
+            <div className="flex justify-end gap-2 sm:gap-3">
               <button
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm sm:text-base"
                 onClick={() => setShowConfirmModal(false)}
                 disabled={isSubmitting}
               >Batal</button>
               <button
-                className="px-4 py-2 rounded bg-gradient-to-r from-blue-500 via-blue-800 to-green-600 hover:from-green-700 hover:to-blue-700 text-white font-bold"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded bg-gradient-to-br from-blue-700 to-blue-800 hover:from-green-700 hover:to-blue-700 text-white font-bold text-sm sm:text-base"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >{isSubmitting ? 'Menyimpan...' : 'Yakin & Submit'}</button>
